@@ -7,8 +7,7 @@
 
 *******************************************************************************/
 
-#include "jsmn.h"
-#include "obfuscate.h"
+#include "jsmn.h" 
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -709,10 +708,10 @@ do                                                                             \
 {                                                                              \
     if ((x) != cudaSuccess)                                                    \
     {                                                                          \
-        fprintf(stderr, AY_OBFUSCATE("ERROR:  CUDA failed at %s: %d\n"),__FILE__,__LINE__);  \
-        fprintf(stderr, AY_OBFUSCATE("CUDA error code %d\n"), x);                            \
+        fprintf(stderr, "ERROR:  CUDA failed at %s: %d\n",__FILE__,__LINE__);  \
+        fprintf(stderr, "CUDA error code %d\n", x);                            \
         fprintf(                                                               \
-            stderr, AY_OBFUSCATE("Miner is now terminated\ning")            \
+            stderr, "Miner is now terminated\n"                                \
             "========================================"                         \
             "========================================\n"                       \
         );                                                                     \
@@ -726,7 +725,7 @@ do                                                                             \
 {                                                                              \
     if (!(func))                                                               \
     {                                                                          \
-        fprintf(stderr, AY_OBFUSCATE("ERROR:  " name " failed at %s: %d\n"),__FILE__,__LINE__);\
+        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -737,7 +736,7 @@ do                                                                             \
 {                                                                              \
     if (!((res) = (func)))                                                     \
     {                                                                          \
-        fprintf(stderr, AY_OBFUSCATE("ERROR:  " name " failed at %s: %d\n"),__FILE__,__LINE__);\
+        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -748,7 +747,7 @@ do                                                                             \
 {                                                                              \
     if ((func) != (status))                                                    \
     {                                                                          \
-        fprintf(stderr, AY_OBFUSCATE("ERROR:  " name " failed at %s: %d\n"),__FILE__,__LINE__);\
+        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -759,7 +758,7 @@ do                                                                             \
 {                                                                              \
     if ((res = func) != (status))                                              \
     {                                                                          \
-        fprintf(stderr, AY_OBFUSCATE("ERROR:  " name " failed at %s: %d\n"),__FILE__,__LINE__);\
+        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
