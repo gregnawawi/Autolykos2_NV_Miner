@@ -37,9 +37,7 @@ GENCODE_FLAGS += -gencode arch=compute_37,code=compute_37 \
   -gencode arch=compute_60,code=compute_60 \
 	-gencode arch=compute_61,code=compute_61 \
 	-gencode arch=compute_70,code=compute_70 \
-	-gencode arch=compute_75,code=compute_75 \
-	-gencode arch=compute_86,code=compute_86 \
-	-gencode arch=compute_90,code=compute_90
+	-gencode arch=compute_75,code=compute_75
 endif
 endif
 
