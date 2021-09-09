@@ -1,11 +1,5 @@
-#ifndef MINING_H
-#define MINING_H
-
-/*******************************************************************************
-
-	MINING -- Autolykos parallel blockMining procedure
-
-*******************************************************************************/
+#ifndef MINI_H
+#define MINI_H
 
 #include "definitions.h"
 
@@ -16,7 +10,7 @@ void cpyCtxSymbol(ctx_t *ctx);
 void cpyBSymbol(uint8_t *bound);
 
 // unfinalized hash of message
-void InitMining(
+void InitMini(
 	// context
 	ctx_t *ctx,
 	// message
@@ -24,7 +18,7 @@ void InitMining(
 	// message length in bytes
 	const uint32_t meslen);
 
-__global__ void BlockMiningStep1(
+__global__ void BlockMiniStep1(
 
 	// data:  mes
 	const uint32_t *data,
@@ -38,7 +32,7 @@ __global__ void BlockMiningStep1(
 	uint32_t *BHashes
 
 );
-__global__ void BlockMiningStep2(
+__global__ void BlockMiniStep2(
 	// data:  mes
 	const uint32_t *data,
 	// nonce base
@@ -51,4 +45,4 @@ __global__ void BlockMiningStep2(
 	uint32_t *valid,
 	uint32_t *count,
 	uint32_t *BHashes);
-#endif // MINING_H
+#endif // MINI_H
