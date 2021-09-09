@@ -9,7 +9,7 @@
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
 #include "../include/easylogging++.h"
-#include "../include/mining.h"
+#include "../include/mini.h"
 #include "../include/prehash.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
@@ -135,7 +135,7 @@ int TestSolutions(
     CUDA_CALL(cudaDeviceSynchronize());
 
     // calculate unfinalized hash of message
-    InitMining(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
+    InitMini(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
 
     // copy context
     CUDA_CALL(cudaMemcpy(
@@ -144,7 +144,7 @@ int TestSolutions(
     ));
 
     // calculate solution candidates
-    BlockMining<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
+    BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
         bound_d, data_d, base, hashes_d, res_d, indices_d
     );
 
@@ -315,7 +315,7 @@ int TestPerformance(
     CUDA_CALL(cudaDeviceSynchronize());
 
     // calculate unfinalized hash of message
-    InitMining(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
+    InitMini(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
 
     // copy context
     CUDA_CALL(cudaMemcpy(
@@ -323,7 +323,7 @@ int TestPerformance(
         cudaMemcpyHostToDevice
     ));
 
-    LOG(INFO) << "BlockMining now for 1 minute";
+    LOG(INFO) << "BlockMini now for 1 minute";
     ms = ch::milliseconds::zero();
 
     uint32_t sum = 0;
@@ -336,7 +336,7 @@ int TestPerformance(
     for ( ; ms.count() < 60000; ++iter)
     {
         // calculate solution candidates
-        BlockMining<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
+        BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
             bound_d, data_d, base, hashes_d, res_d, indices_d
         );
 
@@ -469,7 +469,7 @@ void TestRequests()
 
 
 
-void TestNewCrypto()
+void TestNewCrypt()
 {
     char mnemonic[] = "edge talent poet tortoise trumpet dose";
     uint8_t sk[NUM_SIZE_8];
@@ -506,9 +506,9 @@ int main(int argc, char ** argv)
 
     el::Helpers::setThreadName("test thread");
 
-    LOG(INFO) << "Checking crypto: ";
+    LOG(INFO) << "Checking cryp: ";
 
-    TestNewCrypto();
+    TestNewCrypt();
 
     LOG(INFO) << "Testing requests:";
 
@@ -531,7 +531,7 @@ int main(int argc, char ** argv)
     
     if (freeMem < MIN_FREE_MEMORY)
     {
-        LOG(ERROR) << "Not enough GPU memory for mining,"
+        LOG(ERROR) << "Not enough GPU memory for calculating,"
             << " minimum 2.8 GiB needed";
 
         exit(EXIT_FAILURE);
