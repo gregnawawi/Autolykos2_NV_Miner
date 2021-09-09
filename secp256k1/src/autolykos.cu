@@ -120,7 +120,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     
     if (freeMem < MIN_FREE_MEMORY)
     {
-        LOG(ERROR) << "Not enough GPU memory for mining,"
+        LOG(ERROR) << "Not enough GPU memory for calculating,"
             << " minimum 2.8 GiB needed";
 
         return;
@@ -267,8 +267,8 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 
             Prehash(hashes_d,height);
             // calculate unfinalized hash of message
-            VLOG(1) << "Starting InitMining";
-			//InitMining(&ctx_h, (uint32_t *)mes_h, NUM_SIZE_8);
+            VLOG(1) << "Starting InitMini";
+			//InitMini(&ctx_h, (uint32_t *)mes_h, NUM_SIZE_8);
             
 
 			LOG(INFO) << "GPU " << deviceId << " started";
@@ -284,8 +284,8 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 
         // calculate solution candidates
         VLOG(1) << "Starting main procedure";
-        BlockMiningStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
-        BlockMiningStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
+        BlockMiniStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
+        BlockMiniStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
         VLOG(1) << "Trying to find solution";
 
         // restart iteration if new block was found
