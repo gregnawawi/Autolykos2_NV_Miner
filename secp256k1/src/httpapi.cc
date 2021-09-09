@@ -80,7 +80,7 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
                         deviceInfo << " \"hashrate\" : " << hrate << " , ";
                         totalHr += hrate;
                     }
-                    catch (...) // if GPU is not mining ( CUDA_VISIBLE_DEVICES is set)
+                    catch (...) // if GPU is not working ( CUDA_VISIBLE_DEVICES is set)
                     {}
                     unsigned int temp;
                     unsigned int power;
