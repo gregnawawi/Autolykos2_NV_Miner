@@ -15,9 +15,7 @@
 #include <atomic>
 #include <mutex>
 #include <string.h>
-////////////////////////////////////////////////////////////////////////////////
-//  PARAMETERS: Autolykos algorithm
-////////////////////////////////////////////////////////////////////////////////
+
 // constant message size
 #define CONST_MES_SIZE_8   8192 // 2^10
 
@@ -33,9 +31,6 @@
 // max solutions found in one iteration
 #define MAX_SOLS 16
 
-////////////////////////////////////////////////////////////////////////////////
-//  PARAMETERS: Heuristic prehash CUDA kernel parameters
-////////////////////////////////////////////////////////////////////////////////
 // number of nonces per thread
 #define NONCES_PER_THREAD  1
 
@@ -51,9 +46,6 @@
 #define MIN_FREE_MEMORY    2200000000
 #define MIN_FREE_MEMORY_PREHASH 7300000000
 
-////////////////////////////////////////////////////////////////////////////////
-//  CONSTANTS: Autolykos algorithm
-////////////////////////////////////////////////////////////////////////////////
 // secret key and hash size
 #define NUM_SIZE_8         32
 
@@ -69,7 +61,6 @@
 // index size
 #define INDEX_SIZE_8       4
 
-// BLAKE2b-256 hash buffer size
 #define BUF_SIZE_8         128
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,9 +112,6 @@
 // JSON position of public key
 #define PK_POS             6
 
-//============================================================================//
-//  Configuration file 
-//============================================================================//
 // max JSON objects count for config file,
 // increased, to have more options if we need them
 #define CONF_LEN           21
@@ -137,18 +125,12 @@
 // config JSON position of keep prehash option
 #define KEEP_POS           6
 
-////////////////////////////////////////////////////////////////////////////////
-//  Error messages 
-////////////////////////////////////////////////////////////////////////////////
 #define ERROR_STAT         "stat"
 #define ERROR_ALLOC        "Host memory allocation"
 #define ERROR_IO           "I/O"
 #define ERROR_CURL         "Curl"
 #define ERROR_OPENSSL      "OpenSSL"
 
-////////////////////////////////////////////////////////////////////////////////
-//  Derived parameters
-////////////////////////////////////////////////////////////////////////////////
 // secret key and hash size
 #define NUM_SIZE_4         (NUM_SIZE_8 << 1)
 #define NUM_SIZE_32        (NUM_SIZE_8 >> 2)
@@ -222,9 +204,6 @@ struct ctx_t;
 // number of threads per iteration
 #define THREADS_PER_ITER   (NONCES_PER_ITER / NONCES_PER_THREAD)
 
-////////////////////////////////////////////////////////////////////////////////
-//  Structs
-////////////////////////////////////////////////////////////////////////////////
 typedef unsigned int uint_t;
 
 // autolukos puzzle state
@@ -297,7 +276,6 @@ struct json_t
     int jsoneq(const int pos, const char * str);
 };
 
-// BLAKE2b-256 hash state context
 struct ctx_t
 {
     // input buffer
@@ -310,7 +288,6 @@ struct ctx_t
     uint32_t c;
 };
 
-// BLAKE2b-256 packed uncomplete hash state context 
 struct uctx_t
 {
     // chained state
@@ -321,9 +298,6 @@ struct uctx_t
 
 #define CTX_SIZE sizeof(ctx_t)
 
-////////////////////////////////////////////////////////////////////////////////
-//  BLAKE2b-256 hashing procedures macros
-////////////////////////////////////////////////////////////////////////////////
 // initialization vector
 #define B2B_IV(v)                                                              \
 do                                                                             \
@@ -475,7 +449,7 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// blake2b initialization
+// 2b initialization
 #define B2B_INIT(ctx, aux)                                                     \
 do                                                                             \
 {                                                                              \
@@ -498,7 +472,7 @@ while (0)
 #define CAST(x) (((union { __typeof__(x) a; uint64_t b; })x).b)
 
 /*
-/// // blake2b mixing
+/// // 2b mixing
 /// #define B2B_FINAL(ctx, aux)                                                    \
 /// do                                                                             \
 /// {                                                                              \
@@ -533,7 +507,7 @@ while (0)
 /// while (0)
 */
 
-// blake2b mixing
+// 2b mixing
 #define B2B_FINAL(ctx, aux)                                                    \
 do                                                                             \
 {                                                                              \
@@ -567,7 +541,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// blake2b intermediate mixing procedure on host
 #define HOST_B2B_H(ctx, aux)                                                   \
 do                                                                             \
 {                                                                              \
@@ -581,7 +554,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// blake2b intermediate mixing procedure on host
 #define HOST_B2B_H_LAST(ctx, aux)                                              \
 do                                                                             \
 {                                                                              \
@@ -602,7 +574,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// blake2b intermediate mixing procedure
 #define DEVICE_B2B_H(ctx, aux)                                                 \
 do                                                                             \
 {                                                                              \
@@ -626,7 +597,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// blake2b last mixing procedure
 #define DEVICE_B2B_H_LAST(ctx, aux)                                            \
 do                                                                             \
 {                                                                              \
@@ -711,7 +681,7 @@ do                                                                             \
         fprintf(stderr, "ERROR:  CUDA failed at %s: %d\n",__FILE__,__LINE__);  \
         fprintf(stderr, "CUDA error code %d\n", x);                            \
         fprintf(                                                               \
-            stderr, "Miner is now terminated\n"                                \
+            stderr, "Prog is now terminated\n"                                \
             "========================================"                         \
             "========================================\n"                       \
         );                                                                     \
