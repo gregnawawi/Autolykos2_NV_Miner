@@ -1,11 +1,5 @@
 // autolykos.cu
 
-/*******************************************************************************
-
-    AUTOLYKOS -- Autolykos puzzle cycle
-
-*******************************************************************************/
-
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -16,7 +10,7 @@
 #include "../include/definitions.h"
 #include "../include/easylogging++.h"
 #include "../include/jsmn.h"
-#include "../include/mining.h"
+#include "../include/mini.h"
 #include "../include/prehash.h"
 #include "../include/processing.h"
 #include "../include/reduction.h"
@@ -58,12 +52,12 @@ using namespace std::chrono;
 
 std::atomic<int> end_jobs(0);
 
-void SenderThread(info_t * info, BlockQueue<MinerShare>* shQueue)
+void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
 {
 	el::Helpers::setThreadName("sender thread");
     while(true)
     {
-		MinerShare share = shQueue->get();
+		rShare share = shQueue->get();
 		LOG(INFO) << "Some GPU found and trying to POST a share: " ;
 		PostPuzzleSolution(info->to, (uint8_t*)&share.nonce);
        
@@ -73,16 +67,13 @@ void SenderThread(info_t * info, BlockQueue<MinerShare>* shQueue)
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Miner thread cycle
-////////////////////////////////////////////////////////////////////////////////
-void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<MinerShare>* shQueue)
+void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<rShare>* shQueue)
 {
 	AutolykosAlg solVerifier;
     CUDA_CALL(cudaSetDevice(deviceId));
     cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
     char threadName[20];
-    sprintf(threadName, "GPU %i miner", deviceId);
+    sprintf(threadName, "GPU", deviceId);
     el::Helpers::setThreadName(threadName);    
 
     state_t state = STATE_KEYGEN;
@@ -97,7 +88,6 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
     // (212 + 4) bytes
 	//ctx_t ctx_h;
 
-    // autolykos variables
     uint8_t bound_h[NUM_SIZE_8];
     uint8_t mes_h[NUM_SIZE_8];
     uint8_t nonce[NONCE_SIZE_8];
@@ -178,7 +168,7 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
     ));
 
     //========================================================================//
-    //  Autolykos puzzle cycle
+    //  Puzzle cycle
     //========================================================================//
     uint64_t base = 0;
     uint64_t EndNonce = 0;
@@ -254,7 +244,7 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
 			base = *((uint64_t *)info->extraNonceStart) + deviceId * nonceChunk;
             EndNonce = base + nonceChunk;
             
-            //LOG(INFO) << "gpu: " << deviceId << " base: " << base << " end: " << EndNonce;
+            //LOG(INFO) << "GPU: " << deviceId << " base: " << base << " end: " << EndNonce;
             
             memcpy(&height,info->Hblock, HEIGHT_SIZE);
 
@@ -273,8 +263,6 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
                 cudaMemcpyHostToDevice
             ));
 
-
-
             VLOG(1) << "Starting prehashing with new block data";
 
             Prehash(hashes_d,height);
@@ -292,10 +280,10 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
             state = STATE_CONTINUE;
         }
 
-        //LOG(INFO) << "Starting main BlockMining procedure";
+        //LOG(INFO) << "Starting main procedure";
 
         // calculate solution candidates
-        VLOG(1) << "Starting main BlockMining procedure";
+        VLOG(1) << "Starting main procedure";
         BlockMiningStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
         BlockMiningStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
         VLOG(1) << "Trying to find solution";
@@ -331,10 +319,8 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
 					bool checksol = solVerifier.RunAlg(info->mes,nonce,info->bound,info->Hblock);
 					if (checksol)
 					{
-						MinerShare share(*((uint64_t *)nonce));
+						rShare share(*((uint64_t *)nonce));
 						shQueue->put(share);
-
-
 						if (!info->stratumMode)
 						{
 							state = STATE_KEYGEN;
@@ -347,7 +333,6 @@ void MinerThread(const int totalGPUCards, int deviceId, info_t * info, std::vect
                         LOG(INFO) << " problem in verify solution, nonce: " << *((uint64_t *)nonce);
                         //exit(0);
 					}
-
                 }
 		else
 		{
@@ -414,7 +399,7 @@ int main(int argc, char ** argv)
     info.blockId = 0;
     info.keepPrehash = 0;
     
-    BlockQueue<MinerShare> solQueue;
+    BlockQueue<rShare> solQueue;
 
 
     LOG(INFO) << "Using configuration file " << fileName;
@@ -448,13 +433,13 @@ int main(int argc, char ** argv)
     
 
     //========================================================================//
-    //  Fork miner threads
+    //  Fork threads
     //========================================================================//
-    std::vector<std::thread> miners(deviceCount);
+    std::vector<std::thread> allDevice(deviceCount);
     std::vector<double> hashrates(deviceCount);
     std::vector<int> lastTimestamps(deviceCount);
     std::vector<int> timestamps(deviceCount);
-
+	
     
     // PCI bus and device IDs
     std::vector<std::pair<int,int>> devinfos(deviceCount);
@@ -465,7 +450,7 @@ int main(int argc, char ** argv)
         {
             devinfos[i] = std::make_pair(props.pciBusID, props.pciDeviceID);
         }
-        miners[i] = std::thread(MinerThread,deviceCount, i, &info, &hashrates, &timestamps, &solQueue);
+        allDevice[i] = std::thread(rThread,deviceCount, i, &info, &hashrates, &timestamps, &solQueue);
         hashrates[i] = 0;
         lastTimestamps[i] = 1;
         timestamps[i] = 0;
@@ -491,18 +476,15 @@ int main(int argc, char ** argv)
     uint_t curlcnt = 0;
     const uint_t curltimes = 1000;
 
-    milliseconds ms = milliseconds::zero(); 
-    
+    milliseconds ms = milliseconds::zero();
 
 
-    // bomb node with HTTP with 10ms intervals, if new block came 
-    // signal miners with blockId
 while (1)
     {
         milliseconds start = duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()
         );
-            
+	
         // get latest block
         status = GetLatestBlock(from, &request, &info, 0);
         
@@ -525,7 +507,6 @@ while (1)
             double totalHr = 0;
             for(int i = 0; i < deviceCount; ++i)
             {
-                // check if miner thread is updating hashrate, e.g. alive
                 if(!(curlcnt % (5*curltimes)))
                 {
                     if(lastTimestamps[i] == timestamps[i])
@@ -544,8 +525,8 @@ while (1)
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        int completeMiners = end_jobs.load();
-		if (completeMiners >= deviceCount)
+        int completeMine = end_jobs.load();
+		if (completeMine >= deviceCount)
 		{
 			end_jobs.store(0);
 			JobCompleted(info.endJob);
@@ -556,6 +537,3 @@ while (1)
 }
 
 // autolykos.cu
-
-
-
