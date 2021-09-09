@@ -1,12 +1,6 @@
-// mining.cu
+// mini.cu
 
-/*******************************************************************************
-
-    MINING -- Autolykos parallel BlockMining procedure
-
-*******************************************************************************/
-
-#include "../include/mining.h"
+#include "../include/mini.h"
 #include <cuda.h>
 
 //__constant__ uint32_t nTest = 419430;
@@ -313,7 +307,7 @@ void cpyBSymbol(uint8_t *bound)
 ////////////////////////////////////////////////////////////////////////////////
 //  Unfinalized hash of message
 ////////////////////////////////////////////////////////////////////////////////
-void InitMining(
+void InitMini(
     // context
     ctx_t * ctx,
     // message
@@ -345,12 +339,8 @@ void InitMining(
     return;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  Block mining
-////////////////////////////////////////////////////////////////////////////////
 __global__ __launch_bounds__(64, 64)
-__global__ void BlockMiningStep1(
+__global__ void BlockMiniStep1(
 
 
     // data:  mes  
@@ -519,7 +509,7 @@ __global__ void BlockMiningStep1(
 
 
 __global__ __launch_bounds__(64, 64)
-__global__ void BlockMiningStep2(
+__global__ void BlockMiniStep2(
     // data:  mes  
     const uint32_t * data,
     // nonce base
@@ -564,12 +554,6 @@ __global__ void BlockMiningStep2(
         {
             r[k] = (BHashes[k*THREADS_PER_ITER + tid]);
         }
-
-
-
-        //================================================================//
-        //  Generate indices
-        //================================================================//
 
 
         ((uint8_t *)r)[32] = ((uint8_t *)r)[0];
