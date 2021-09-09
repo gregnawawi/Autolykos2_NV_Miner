@@ -77,13 +77,13 @@ int ReadConfig(
             strncat(
                 from, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
 
-            strcat(from, "/mining/candidate");
+            strcat(from, "/mini/candidate");
 
             strncat(to, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(to, "/mining/solution");
+            strcat(to, "/mini/solution");
 
             strncat(endJob, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(endJob, "/mining/job/completed");
+            strcat(endJob, "/mini/job/completed");
 
             VLOG(1) << "from url " << from << " to url " << to;
 
