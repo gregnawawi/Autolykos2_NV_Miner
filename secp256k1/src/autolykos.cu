@@ -73,7 +73,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     CUDA_CALL(cudaSetDevice(deviceId));
     cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
     char threadName[20];
-    sprintf(threadName, "GPU", deviceId);
+    sprintf(threadName, "GPU %i worker", deviceId);
     el::Helpers::setThreadName(threadName);    
 
     state_t state = STATE_KEYGEN;
