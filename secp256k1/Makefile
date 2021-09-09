@@ -34,10 +34,13 @@ ifeq ($(GENCODE_FLAGS),)
 HIGHEST_SM = $(strip $(lastword $(SMS)))
 ifneq ($(HIGHEST_SM),)
 GENCODE_FLAGS += -gencode arch=compute_37,code=compute_37 \
-  -gencode arch=compute_60,code=compute_60 \
+	-gencode arch=compute_52,code=compute_52 \
+  	-gencode arch=compute_60,code=compute_60 \
 	-gencode arch=compute_61,code=compute_61 \
 	-gencode arch=compute_70,code=compute_70 \
-	-gencode arch=compute_75,code=compute_75
+	-gencode arch=compute_75,code=compute_75 \
+	-gencode arch=compute_86,code=compute_86
+	
 endif
 endif
 
