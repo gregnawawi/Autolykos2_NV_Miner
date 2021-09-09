@@ -7,10 +7,10 @@
 #include <deque>
 #include <iostream>
 // all that we need to send to node/pool
-struct MinerShare
+struct rShare
 {
-    MinerShare();
-    MinerShare(uint64_t _nonce)
+    rShare();
+    rShare(uint64_t _nonce)
     {
         nonce = _nonce;
     }
