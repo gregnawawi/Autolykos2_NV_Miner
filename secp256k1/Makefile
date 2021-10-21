@@ -11,7 +11,8 @@ SHELL := /bin/bash
 STD = --std=c++11
 
 # side libs paths
-LIBS = -L/usr/local/lib -lcurl -I/usr/local/include -lssl -lcrypto -lnvidia-ml
+# LIBS = -L/usr/local/lib -lcurl -I/usr/local/include -lssl -lcrypto -lnvidia-ml
+LIBS = -L/usr/local/lib -lcurl -I/usr/local/include -lssl -lcrypto -L/usr/local/nvidia/lib64 -lnvidia-ml
 
 # stub config content
 CONFIG = '{ \
