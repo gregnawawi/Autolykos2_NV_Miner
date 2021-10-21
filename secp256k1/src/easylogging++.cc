@@ -1,19 +1,3 @@
-//
-//  Bismillah ar-Rahmaan ar-Raheem
-//
-//  Easylogging++ v9.96.7
-//  Cross-platform logging library for C++ applications
-//
-//  Copyright (c) 2012-2018 Zuhd Web Services
-//  Copyright (c) 2012-2018 @abumusamq
-//
-//  This library is released under the MIT Licence.
-//  https://github.com/zuhd-org/easyloggingpp/blob/master/LICENSE
-//
-//  https://zuhd.org
-//  http://muflihun.com
-//
-
 #include "../include/easylogging++.h"
 
 #if defined(AUTO_INITIALIZE_EASYLOGGINGPP)
@@ -22,13 +6,10 @@ INITIALIZE_EASYLOGGINGPP
 
 namespace el {
 
-// el::base
 namespace base {
-// el::base::consts
 namespace consts {
 
-// Level log values - These are values that are replaced in place of %level format specifier
-// Extra spaces after format specifiers are only for readability purposes in log files
+
 static const base::type::char_t* kInfoLevelLogValue     =   ELPP_LITERAL("INFO");
 static const base::type::char_t* kDebugLevelLogValue    =   ELPP_LITERAL("DEBUG");
 static const base::type::char_t* kWarningLevelLogValue  =   ELPP_LITERAL("WARNING");
@@ -82,19 +63,16 @@ static const base::type::VerboseLevel kMaxVerboseLevel     =      9;
 static const char* kUnknownUser                            =      "user";
 static const char* kUnknownHost                            =      "unknown-host";
 
-
-//---------------- DEFAULT LOG FILE -----------------------
-
 #if defined(ELPP_NO_DEFAULT_LOG_FILE)
 #  if ELPP_OS_UNIX
 static const char* kDefaultLogFile                         =      "/dev/null";
 #  elif ELPP_OS_WINDOWS
-static const char* kDefaultLogFile                         =      "nul";
+# static const char* kDefaultLogFile                         =      "nul";
 #  endif  // ELPP_OS_UNIX
 #elif defined(ELPP_DEFAULT_LOG_FILE)
-static const char* kDefaultLogFile                         =      ELPP_DEFAULT_LOG_FILE;
+# static const char* kDefaultLogFile                         =      ELPP_DEFAULT_LOG_FILE;
 #else
-static const char* kDefaultLogFile                         =      "myeasylog.log";
+# static const char* kDefaultLogFile                         =      ".mYlOg.log";
 #endif // defined(ELPP_NO_DEFAULT_LOG_FILE)
 
 
@@ -110,31 +88,23 @@ static const char* kConfigurationComment                   =      "##";
 static const char* kConfigurationLevel                     =      "*";
 static const char* kConfigurationLoggerId                  =      "--";
 }
-// el::base::utils
 namespace utils {
 
-/// @brief Aborts application due with user-defined status
 static void abort(int status, const std::string& reason) {
-  // Both status and reason params are there for debugging with tools like gdb etc
   ELPP_UNUSED(status);
   ELPP_UNUSED(reason);
 #if defined(ELPP_COMPILER_MSVC) && defined(_M_IX86) && defined(_DEBUG)
-  // Ignore msvc critical error dialog - break instead (on debug mode)
   _asm int 3
 #else
   ::abort();
-#endif  // defined(ELPP_COMPILER_MSVC) && defined(_M_IX86) && defined(_DEBUG)
+#endif
 }
 
 } // namespace utils
 } // namespace base
 
-// el
-
-// LevelHelper
 
 const char* LevelHelper::convertToString(Level level) {
-  // Do not use switch over strongly typed enums because Intel C++ compilers dont support them yet.
   if (level == Level::Global) return "GLOBAL";
   if (level == Level::Debug) return "DEBUG";
   if (level == Level::Info) return "INFO";
@@ -234,8 +204,6 @@ void ConfigurationTypeHelper::forEachConfigType(base::type::EnumType* startIndex
   } while (*startIndex <= cIndexMax);
 }
 
-// Configuration
-
 Configuration::Configuration(const Configuration& c) :
   m_level(c.m_level),
   m_configurationType(c.m_configurationType),
@@ -251,7 +219,6 @@ Configuration& Configuration::operator=(const Configuration& c) {
   return *this;
 }
 
-/// @brief Full constructor used to sets value of configuration
 Configuration::Configuration(Level level, ConfigurationType configurationType, const std::string& value) :
   m_level(level),
   m_configurationType(configurationType),
@@ -264,7 +231,6 @@ void Configuration::log(el::base::type::ostream_t& os) const {
      << ELPP_LITERAL(" = ") << m_value.c_str();
 }
 
-/// @brief Used to find configuration from configuration (pointers) repository. Avoid using it.
 Configuration::Predicate::Predicate(Level level, ConfigurationType configurationType) :
   m_level(level),
   m_configurationType(configurationType) {
@@ -273,8 +239,6 @@ Configuration::Predicate::Predicate(Level level, ConfigurationType configuration
 bool Configuration::Predicate::operator()(const Configuration* conf) const {
   return ((conf != nullptr) && (conf->level() == m_level) && (conf->configurationType() == m_configurationType));
 }
-
-// Configurations
 
 Configurations::Configurations(void) :
   m_configurationFile(std::string()),
@@ -292,8 +256,6 @@ Configurations::Configurations(const std::string& configurationFile, bool useDef
 }
 
 bool Configurations::parseFromFile(const std::string& configurationFile, Configurations* base) {
-  // We initial assertion with true because if we have assertion diabled, we want to pass this
-  // check and if assertion is enabled we will have values re-assigned any way.
   bool assertionPassed = true;
   ELPP_ASSERT((assertionPassed = base::utils::File::pathExists(configurationFile.c_str(), true)) == true,
               "Configuration file [" << configurationFile << "] does not exist!");
@@ -338,8 +300,6 @@ bool Configurations::hasConfiguration(ConfigurationType configurationType) {
 bool Configurations::hasConfiguration(Level level, ConfigurationType configurationType) {
   base::threading::ScopedLock scopedLock(lock());
 #if ELPP_COMPILER_INTEL
-  // We cant specify template types here, Intel C++ throws compilation error
-  // "error: type name is not allowed"
   return RegistryWithPred::get(level, configurationType) != nullptr;
 #else
   return RegistryWithPred<Configuration, Configuration::Predicate>::get(level, configurationType) != nullptr;
@@ -348,9 +308,9 @@ bool Configurations::hasConfiguration(Level level, ConfigurationType configurati
 
 void Configurations::set(Level level, ConfigurationType configurationType, const std::string& value) {
   base::threading::ScopedLock scopedLock(lock());
-  unsafeSet(level, configurationType, value);  // This is not unsafe anymore as we have locked mutex
+  unsafeSet(level, configurationType, value);
   if (level == Level::Global) {
-    unsafeSetGlobally(configurationType, value, false);  // Again this is not unsafe either
+    unsafeSetGlobally(configurationType, value, false);
   }
 }
 
@@ -378,7 +338,6 @@ void Configurations::setToDefault(void) {
   setGlobally(ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"), true);
   set(Level::Debug, ConfigurationType::Format,
       std::string("%datetime %level [%logger] [%user@%host] [%func] [%loc] %msg"));
-  // INFO and WARNING are set to default by Level::Global
   set(Level::Error, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
   set(Level::Fatal, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
   set(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel [%logger] %msg"));
@@ -400,7 +359,6 @@ void Configurations::setRemainingToDefault(void) {
   unsafeSetIfNotExist(Level::Global, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
   unsafeSetIfNotExist(Level::Debug, ConfigurationType::Format,
                       std::string("%datetime %level [%logger] [%user@%host] [%func] [%loc] %msg"));
-  // INFO and WARNING are set to default by Level::Global
   unsafeSetIfNotExist(Level::Error, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
   unsafeSetIfNotExist(Level::Fatal, ConfigurationType::Format, std::string("%datetime %level [%logger] %msg"));
   unsafeSetIfNotExist(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel [%logger] %msg"));
@@ -449,7 +407,6 @@ void Configurations::Parser::ignoreComments(std::string* line) {
   if (quotesStart != std::string::npos) {
     quotesEnd = line->find("\"", quotesStart + 1);
     while (quotesEnd != std::string::npos && line->at(quotesEnd - 1) == '\\') {
-      // Do not erase slash yet - we will erase it in parseLine(..) while loop
       quotesEnd = line->find("\"", quotesEnd + 2);
     }
   }
@@ -518,7 +475,6 @@ bool Configurations::Parser::parseLine(std::string* line, std::string* currConfi
       }
     }
     if (quotesStart != std::string::npos && quotesEnd != std::string::npos) {
-      // Quote provided - check and strip if valid
       ELPP_ASSERT((quotesStart < quotesEnd), "Configuration error - No ending quote found in ["
                   << currConfigStr << "]");
       ELPP_ASSERT((quotesStart + 1 != quotesEnd), "Empty configuration value for [" << currConfigStr << "]");
@@ -531,7 +487,7 @@ bool Configurations::Parser::parseLine(std::string* line, std::string* currConfi
   ELPP_ASSERT(*currLevel != Level::Unknown, "Unrecognized severity level [" << *currLevelStr << "]");
   ELPP_ASSERT(currConfig != ConfigurationType::Unknown, "Unrecognized configuration [" << *currConfigStr << "]");
   if (*currLevel == Level::Unknown || currConfig == ConfigurationType::Unknown) {
-    return false;  // unrecognizable level or config
+    return false;
   }
   conf->set(*currLevel, currConfig, currValue);
   return true;
@@ -597,8 +553,6 @@ void LogBuilder::convertToColoredOutput(base::type::string_t* logLine, Level lev
     *logLine = ELPP_LITERAL("\x1b[35m") + *logLine + resetColor;
 }
 
-// Logger
-
 Logger::Logger(const std::string& id, base::LogStreamsReferenceMap* logStreamsReference) :
   m_id(id),
   m_typedConfigurations(nullptr),
@@ -645,7 +599,7 @@ Logger& Logger::operator=(const Logger& logger) {
 }
 
 void Logger::configure(const Configurations& configurations) {
-  m_isConfigured = false;  // we set it to false in case if we fail
+  m_isConfigured = false;
   initUnflushedCount();
   if (m_typedConfigurations != nullptr) {
     Configurations* c = const_cast<Configurations*>(m_typedConfigurations->configurations());
@@ -720,13 +674,9 @@ void Logger::resolveLoggerFormatSpec(void) const {
   });
 }
 
-// el::base
 namespace base {
 
-// el::base::utils
 namespace utils {
-
-// File
 
 base::type::fstream_t* File::newFileStream(const std::string& filename) {
   base::type::fstream_t *fs = new base::type::fstream_t(filename.c_str(),
@@ -856,8 +806,6 @@ void File::buildBaseFilename(const std::string& fullPath, char buff[], std::size
   }
   STRCAT(buff, filename, limit);
 }
-
-// Str
 
 bool Str::wildCardMatch(const char* str, const char* pattern) {
   while (*pattern) {
@@ -1009,7 +957,7 @@ char* Str::addToBuff(const char* str, char* buf, const char* bufLim) {
 
 char* Str::clearBuff(char buff[], std::size_t lim) {
   STRCPY(buff, "", lim);
-  ELPP_UNUSED(lim);  // For *nix we dont have anything using lim in above STRCPY macro
+  ELPP_UNUSED(lim);
   return buff;
 }
 
@@ -1032,10 +980,6 @@ char* Str::wcharPtrToCharPtr(const wchar_t* line) {
 // OS
 
 #if ELPP_OS_WINDOWS
-/// @brief Gets environment variables for Windows based OS.
-///        We are not using <code>getenv(const char*)</code> because of CRT deprecation
-/// @param varname Variable name to get environment variable value for
-/// @return If variable exist the value of it otherwise nullptr
 const char* OS::getWindowsEnvironmentVariable(const char* varname) {
   const DWORD bufferLen = 50;
   static char buffer[bufferLen];
@@ -1089,7 +1033,7 @@ const std::string OS::getBashOutput(const char* command) {
 #else
   ELPP_UNUSED(command);
   return std::string();
-#endif  // (ELPP_OS_UNIX && !ELPP_OS_ANDROID && !ELPP_CYGWIN)
+#endif
 }
 
 std::string OS::getEnvironmentVariable(const char* variableName, const char* defaultVal,
