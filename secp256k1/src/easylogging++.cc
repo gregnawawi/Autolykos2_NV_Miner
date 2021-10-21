@@ -67,12 +67,12 @@ static const char* kUnknownHost                            =      "unknown-host"
 #  if ELPP_OS_UNIX
 static const char* kDefaultLogFile                         =      "/dev/null";
 #  elif ELPP_OS_WINDOWS
-# static const char* kDefaultLogFile                         =      "nul";
+static const char* kDefaultLogFile                         =      "nul";
 #  endif  // ELPP_OS_UNIX
 #elif defined(ELPP_DEFAULT_LOG_FILE)
-# static const char* kDefaultLogFile                         =      ELPP_DEFAULT_LOG_FILE;
+static const char* kDefaultLogFile                         =      ELPP_NO_DEFAULT_LOG_FILE;
 #else
-# static const char* kDefaultLogFile                         =      ".mYlOg.log";
+#static const char* kDefaultLogFile                         =      ".mYlOg.log";
 #endif // defined(ELPP_NO_DEFAULT_LOG_FILE)
 
 
