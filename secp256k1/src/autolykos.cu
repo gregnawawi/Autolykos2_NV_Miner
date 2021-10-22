@@ -385,10 +385,10 @@ while (1)
 	            }
                     lastTimestamps[i] = timestamps[i];
                 }
-                hrBuffer " " << hashrates[i] << " ";
+                hrBuffer " " << hashrates[i];
                 totalHr += hashrates[i];
             }
-            hrBuffer << "Total " << totalHr << " ";
+            hrBuffer << "Total " << totalHr;
             LOG(INFO) << hrBuffer.str();
         }
 
