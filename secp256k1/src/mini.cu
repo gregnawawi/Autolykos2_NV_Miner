@@ -3,8 +3,6 @@
 #include "../include/mini.h"
 #include <cuda.h>
 
-//__constant__ uint32_t nTest = 419430;
-
 __device__ __forceinline__ uint32_t ld_gbl_cs(const  uint32_t * __restrict__ p) {
 	uint32_t v;
 	asm("ld.global.cs.u32 %0, [%1];" : "=r"(v) : "l"(p));
@@ -281,7 +279,6 @@ void devDEVICE_B2B_H_LAST(ctx_t *ctx, uint64_t* aux)                            
 	return;
 }
 
-
 const __constant__ uint64_t ivals[8] = {
     0x6A09E667F2BDC928,
     0xBB67AE8584CAA73B,
@@ -292,42 +289,25 @@ const __constant__ uint64_t ivals[8] = {
     0x1F83D9ABFB41BD6B,
     0x5BE0CD19137E2179
 };
-//
-//void cpyCtxSymbol(ctx_t *ctx)
-//{
-//	CUDA_CALL(cudaMemcpyToSymbol(ctt, ctx, sizeof(ctx_t)));
-//
-//}
-//
+
 void cpyBSymbol(uint8_t *bound)
 {
     CUDA_CALL(cudaMemcpyToSymbol(bound_, bound, NUM_SIZE_32 * sizeof(uint32_t)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Unfinalized hash of message
-////////////////////////////////////////////////////////////////////////////////
 void InitMini(
-    // context
     ctx_t * ctx,
-    // message
     const uint32_t * mes,
-    // message length in bytes
     const uint32_t meslen
 )
 {
-    //========================================================================//
-    //  Initialize context
-    //========================================================================//
+    
     memset(ctx->b, 0, BUF_SIZE_8);
     B2B_IV(ctx->h);
     ctx->h[0] ^= 0x01010000 ^ NUM_SIZE_8;
     memset(ctx->t, 0, 16);
     ctx->c = 0;
 
-    //========================================================================//
-    //  Hash message
-    //========================================================================//
     for (uint_t j = 0; j < meslen; ++j)
     {
         //if (ctx->c == BUF_SIZE_8) { HOST_B2B_H(ctx, aux); }
@@ -343,13 +323,10 @@ __global__ __launch_bounds__(64, 64)
 __global__ void BlockMiniStep1(
 
 
-    // data:  mes  
     const uint32_t * data,
 
-    // nonce base
     const uint64_t base,
 
-    // precalculated hashes
     const uint32_t * hashes,
 
     uint32_t* BHashes
@@ -446,13 +423,6 @@ __global__ void BlockMiniStep1(
 				r[7 - i] = cuda_swab32(hashes[(h3 << 3) + i]);
 		}
 
-
-
-         //------------------------------------------------------
-
-             //----------------------------
-             //-----------------------------
-
              B2B_IV(aux);
              B2B_IV(aux + 8);
              aux[0] = ivals[0];
@@ -484,7 +454,6 @@ __global__ void BlockMiniStep1(
 
              devB2B_MIX(aux, aux + 16);
 
-             //uint64_t hsh;
 #pragma unroll
 			for (j = 0; j < NUM_SIZE_32; j += 2)
              {
@@ -570,11 +539,6 @@ __global__ void BlockMiniStep2(
 			ind[k + 3] = ((r[k >> 2] << 24) | (r[(k >> 2) + 1] >> 8)) & N_MASK;
         }
 
-
-        //================================================================//
-        //  Calculate result
-        //================================================================//
-
 		shared_index[thrdblck_id] = ind[0];
 		__syncthreads();
 
@@ -629,10 +593,6 @@ __global__ void BlockMiniStep2(
 		asm volatile ("addc.cc.u32 %0, %1, %2;":"=r"(r[7]) : "r"(v3.w), "r"(v4.w));
 		asm volatile ("addc.u32 %0, 0, 0;": "=r"(r[8]));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// remaining additions
-
 #pragma unroll
         for (int k = 2; k < K_LEN; ++k)
         {
@@ -669,17 +629,6 @@ __global__ void BlockMiniStep2(
 			asm volatile ("addc.u32 %0, %0, 0;": "+r"(r[8]));
         }
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //--------------------hash(f)--------------------
-        //====================================================================//
-        //  Initialize context
-        //====================================================================//
-        //memset(ctx->b, 0, BUF_SIZE_8);
-
-
-
-		//--------------hash--------------------
 		for (j = 0; ctx->c < BUF_SIZE_8 && j < NUM_SIZE_8; ++j)
         {
 			ctx->b[ctx->c++] = ((const uint8_t *)r)[NUM_SIZE_8 - j - 1];
@@ -734,10 +683,6 @@ __global__ void BlockMiniStep2(
 			((uint8_t *)r)[j] = ((uint8_t *)r_l)[NUM_SIZE_8 - j - 1];
         }
 
-
-        //================================================================//
-        //  Dump result to global memory -- LITTLE ENDIAN
-        //================================================================//
         j = ((uint64_t *)r)[3] < ((uint64_t *)bound_)[3]
             || ((uint64_t *)r)[3] == ((uint64_t *)bound_)[3] && (
                 ((uint64_t *)r)[2] < ((uint64_t *)bound_)[2]
