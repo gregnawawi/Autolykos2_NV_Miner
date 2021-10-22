@@ -8,7 +8,6 @@ inline int key(std::pair<int,int> x)
 }
 
 
-// outputs JSON with GPUs hashrates, temps, and power usages
 void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>>* props)
 {
     std::chrono::time_point<std::chrono::system_clock> timeStart;
@@ -29,7 +28,6 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
         std::stringstream strBuf;
         strBuf << "{ ";
         
-        // NVML data 
         double totalHr = 0;
         nvmlReturn_t result;
         result = nvmlInit();
@@ -50,7 +48,6 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
                 if(result == NVML_SUCCESS)
                 {
                     
-
                     nvmlPciInfo_t pciInfo;
                     result = nvmlDeviceGetPciInfo ( device, &pciInfo );
                     if(result != NVML_SUCCESS) { continue; }
@@ -77,10 +74,10 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
                     try{
 
                         hrate = hrMap.at(key(std::make_pair((int)pciInfo.bus, (int)pciInfo.device)));
-                        deviceInfo << " \"hashrate\" : " << hrate << " , ";
+                        deviceInfo << " \"h\" : " << hrate << " , ";
                         totalHr += hrate;
                     }
-                    catch (...) // if GPU is not working ( CUDA_VISIBLE_DEVICES is set)
+                    catch (...)
                     {}
                     unsigned int temp;
                     unsigned int power;
