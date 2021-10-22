@@ -1,11 +1,5 @@
 // test.cu
 
-/*******************************************************************************
-
-    TEST -- hash functions test suite
-
-*******************************************************************************/
-
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
 #include "../include/easylogging++.h"
@@ -35,46 +29,23 @@ INITIALIZE_EASYLOGGINGPP
 
 namespace ch = std::chrono;
 
-////////////////////////////////////////////////////////////////////////////////
-//  Test solutions correctness
-////////////////////////////////////////////////////////////////////////////////
 int TestSolutions(
     const info_t * info,
     const uint8_t * x,
     const uint8_t * w
 )
 {
-    LOG(INFO) << "Solutions test started";
-    LOG(INFO) << "Set keepPrehash = " << ((info->keepPrehash)? "true": "false");
-
-    //========================================================================//
-    //  Host memory allocation
-    //========================================================================//
-    // hash context
-    // (212 + 4) bytes
     ctx_t ctx_h;
 
-    //========================================================================//
-    //  Device memory allocation
-    //========================================================================//
-    // boundary for puzzle
-    // ~0 MiB
     uint32_t * bound_d;
     CUDA_CALL(cudaMalloc(&bound_d, NUM_SIZE_8 + DATA_SIZE_8));
-    // data: pk || mes || w || padding || x || sk || ctx
-    // (2 * PK_SIZE_8 + 2 + 3 * NUM_SIZE_8 + 212 + 4) bytes // ~0 MiB
     uint32_t * data_d = bound_d + NUM_SIZE_32;
 
-    // precalculated hashes
-    // N_LEN * NUM_SIZE_8 bytes // 2 GiB
     uint32_t * hashes_d;
     CUDA_CALL(cudaMalloc(&hashes_d, (uint32_t)N_LEN * NUM_SIZE_8));
 
-    // WORKSPACE_SIZE_8 bytes
-    // potential solutions of puzzle
     uint32_t * res_d;
     CUDA_CALL(cudaMalloc(&res_d, WORKSPACE_SIZE_8));
-    // indices of unfinalized hashes
     uint32_t * indices_d = res_d + NONCES_PER_ITER * NUM_SIZE_32;
 
     uctx_t * uctxs_d = NULL;
@@ -84,66 +55,48 @@ int TestSolutions(
         CUDA_CALL(cudaMalloc(&uctxs_d, (uint32_t)N_LEN * sizeof(uctx_t)));
     }
 
-    //========================================================================//
-    //  Data transfer form host to device
-    //========================================================================//
-    // copy boundary
     CUDA_CALL(cudaMemcpy(
         bound_d, info->bound, NUM_SIZE_8, cudaMemcpyHostToDevice
     ));
 
-    // copy public key
     CUDA_CALL(cudaMemcpy(data_d, info->pk, PK_SIZE_8, cudaMemcpyHostToDevice));
 
-    // copy message
     CUDA_CALL(cudaMemcpy(
         (uint8_t *)data_d + PK_SIZE_8, info->mes, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy one time public key
     CUDA_CALL(cudaMemcpy(
         (uint8_t *)data_d + PK_SIZE_8 + NUM_SIZE_8, w, PK_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy one time secret key
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + NUM_SIZE_32, x, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy secret key
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + 2 * NUM_SIZE_32, info->sk, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    //========================================================================//
-    //  Test solutions
-    //========================================================================//
     uint64_t base = 0;
 
     if (info->keepPrehash)
     {
-        // UncompleteInitPrehash<<<1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM>>>(
-        //     data_d, uctxs_d
-        // );
     }
 
     Prehash(info->keepPrehash, data_d, uctxs_d, hashes_d, res_d);
     CUDA_CALL(cudaDeviceSynchronize());
 
-    // calculate unfinalized hash of message
     InitMini(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
 
-    // copy context
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + 3 * NUM_SIZE_32, &ctx_h, sizeof(ctx_t),
         cudaMemcpyHostToDevice
     ));
 
-    // calculate solution candidates
     BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
         bound_d, data_d, base, hashes_d, res_d, indices_d
     );
@@ -163,63 +116,36 @@ int TestSolutions(
     LOG(INFO) << "Found nonce: " << nonce-1;
     if(nonce != 0x3381BF)
     {
-        LOG(ERROR) << "Solutions test failed: wrong nonce";
         exit(EXIT_FAILURE);
     }
 
-    //========================================================================//
-    //  Device memory deallocation
-    //========================================================================//
     CUDA_CALL(cudaFree(bound_d));
     CUDA_CALL(cudaFree(hashes_d));
     CUDA_CALL(cudaFree(res_d));
 
     if (info->keepPrehash) { CUDA_CALL(cudaFree(uctxs_d)); }
 
-    LOG(INFO) << "Solutions test passed\n";
-
     return EXIT_SUCCESS;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Test performance
-////////////////////////////////////////////////////////////////////////////////
 int TestPerformance(
     const info_t * info,
     const uint8_t * x,
     const uint8_t * w
 )
 {
-    LOG(INFO) << "Performance test started";
 
-    //========================================================================//
-    //  Host memory allocation
-    //========================================================================//
-    // hash context
-    // (212 + 4) bytes
     ctx_t ctx_h;
 
-    //========================================================================//
-    //  Device memory allocation
-    //========================================================================//
-    // boundary for puzzle
-    // ~0 MiB
     uint32_t * bound_d;
     CUDA_CALL(cudaMalloc(&bound_d, NUM_SIZE_8 + DATA_SIZE_8));
-    // data: pk || mes || w || padding || x || sk || ctx
-    // (2 * PK_SIZE_8 + 2 + 3 * NUM_SIZE_8 + 212 + 4) bytes // ~0 MiB
     uint32_t * data_d = bound_d + NUM_SIZE_32;
 
-    // precalculated hashes
-    // N_LEN * NUM_SIZE_8 bytes // 2 GiB
     uint32_t * hashes_d;
     CUDA_CALL(cudaMalloc(&hashes_d, (uint32_t)N_LEN * NUM_SIZE_8));
 
-    // WORKSPACE_SIZE_8 bytes
-    // potential solutions of puzzle
     uint32_t * res_d;
     CUDA_CALL(cudaMalloc(&res_d, WORKSPACE_SIZE_8));
-    // indices of unfinalized hashes
     uint32_t * indices_d = res_d + NONCES_PER_ITER * NUM_SIZE_32;
 
     uctx_t * uctxs_d = NULL;
@@ -229,49 +155,35 @@ int TestPerformance(
         CUDA_CALL(cudaMalloc(&uctxs_d, (uint32_t)N_LEN * sizeof(uctx_t)));
     }
 
-    //========================================================================//
-    //  Data transfer form host to device
-    //========================================================================//
-    // copy boundary
     CUDA_CALL(cudaMemcpy(
         bound_d, info->bound, NUM_SIZE_8, cudaMemcpyHostToDevice
     ));
 
-    // copy public key
     CUDA_CALL(cudaMemcpy(data_d, info->pk, PK_SIZE_8, cudaMemcpyHostToDevice));
 
-    // copy message
     CUDA_CALL(cudaMemcpy(
         (uint8_t *)data_d + PK_SIZE_8, info->mes, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy one time public key
     CUDA_CALL(cudaMemcpy(
         (uint8_t *)data_d + PK_SIZE_8 + NUM_SIZE_8, w, PK_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy one time secret key
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + NUM_SIZE_32, x, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    // copy secret key
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + 2 * NUM_SIZE_32, info->sk, NUM_SIZE_8,
         cudaMemcpyHostToDevice
     ));
 
-    //========================================================================//
-    //  Test solutions
-    //========================================================================//
     uint64_t base = 0;
 
     ch::milliseconds ms = ch::milliseconds::zero(); 
-
-    LOG(INFO) << "Set keepPrehash = false";
 
     ch::milliseconds start = ch::duration_cast<ch::milliseconds>(
         ch::system_clock::now().time_since_epoch()
@@ -289,11 +201,6 @@ int TestPerformance(
 
     if (info->keepPrehash)
     {
-        LOG(INFO) << "Set keepPrehash = true";
-
-        // UncompleteInitPrehash<<<1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM>>>(
-        //     data_d, uctxs_d
-        // );
 
         CUDA_CALL(cudaDeviceSynchronize());
 
@@ -309,21 +216,17 @@ int TestPerformance(
             ch::system_clock::now().time_since_epoch()
         ) - start;
 
-        LOG(INFO) << "Prehash time: " << ms.count() << " ms";
     }
 
     CUDA_CALL(cudaDeviceSynchronize());
 
-    // calculate unfinalized hash of message
     InitMini(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
 
-    // copy context
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + 3 * NUM_SIZE_32, &ctx_h, sizeof(ctx_t),
         cudaMemcpyHostToDevice
     ));
 
-    LOG(INFO) << "BlockMini now for 1 minute";
     ms = ch::milliseconds::zero();
 
     uint32_t sum = 0;
@@ -335,7 +238,6 @@ int TestPerformance(
 
     for ( ; ms.count() < 60000; ++iter)
     {
-        // calculate solution candidates
         BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
             bound_d, data_d, base, hashes_d, res_d, indices_d
         );
@@ -348,8 +250,6 @@ int TestPerformance(
         if(nonce != 0) ++sum;
 
         CUDA_CALL(cudaMemset(indices_d, 0 ,sizeof(uint32_t)));
-        // reduction now removed so no findsum
-        //sum += FindSum(indices_d, indices_d + NONCES_PER_ITER, NONCES_PER_ITER);
         cudaDeviceSynchronize();
         base += NONCES_PER_ITER;
 
@@ -358,25 +258,16 @@ int TestPerformance(
         ) - start;
     }
 
-    //========================================================================//
-    //  Device memory deallocation
-    //========================================================================//
     CUDA_CALL(cudaFree(bound_d));
     CUDA_CALL(cudaFree(hashes_d));
     CUDA_CALL(cudaFree(res_d));
 
     if (info->keepPrehash) { CUDA_CALL(cudaFree(uctxs_d)); }
 
-    LOG(INFO) << "Found " << sum << " solutions";
-    LOG(INFO) << "Hashrate: " << (double)NONCES_PER_ITER * iter
-        / ((double)1000 * ms.count()) << " MH/s";
-    LOG(INFO) << "Performance test completed\n";
-
     return EXIT_SUCCESS;
 }
 
 
-// ugly stuff, will rewrite later
 void TestRequests()
 {
     json_t oldreq(0, REQ_LEN);
@@ -397,8 +288,6 @@ void TestRequests()
     WriteFunc((void*)bigrequest, sizeof(char), strlen(bigrequest), &oldreqbig);
     if(strcmp(bigrequest, oldreqbig.ptr))
     {
-        LOG(ERROR) << "WriteFunc strings do not match " 
-        << bigrequest << "\n" << oldreqbig.ptr;
     }
     
     
@@ -411,7 +300,6 @@ void TestRequests()
     WriteFunc((void*)request, sizeof(char), strlen(request), &oldreq);
     if(strcmp(request, oldreq.ptr))
     {
-        LOG(ERROR) << "WriteFunc strings do not match " << request << "\n" << oldreq.ptr;
     }
     
 
@@ -461,12 +349,7 @@ void TestRequests()
     LOG(INFO) << "Testing uncomplete request 2 " 
      << "\n result " << ((ParseRequest(&oldreq, newreq, &testinfo, 1) == EXIT_SUCCESS) ? "ERROR" : "OK");
     delete newreq;
-
-
-
-
 }
-
 
 
 void TestNewCrypt()
@@ -482,20 +365,13 @@ void TestNewCrypt()
     if(strncmp(skstr, "392F75AD23278B3CD7B060D900138F20F8CBA89ABB259B5DCF5D9830B49D8E38", NUM_SIZE_4))
     {
         printf("%.64s private key1\n", skstr);
-        LOG(ERROR) << "mnemonic -> private key conversion does not work correctly";
     }
     else
     {
-        LOG(INFO) << "Mnemonic -> private key conversion works OK";
     }
-
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  Main
-////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char ** argv)
 {
     START_EASYLOGGINGPP(argc, argv);
@@ -506,21 +382,13 @@ int main(int argc, char ** argv)
 
     el::Helpers::setThreadName("test thread");
 
-    LOG(INFO) << "Checking cryp: ";
-
     TestNewCrypt();
 
-    LOG(INFO) << "Testing requests:";
-
     TestRequests();
-    //========================================================================//
-    //  Check requirements
-    //========================================================================//
     int deviceCount;
 
     if (cudaGetDeviceCount(&deviceCount) != cudaSuccess)
     {
-        LOG(ERROR) << "Error checking GPU";
         exit(EXIT_FAILURE);
     }
 
@@ -531,23 +399,15 @@ int main(int argc, char ** argv)
     
     if (freeMem < MIN_FREE_MEMORY)
     {
-        LOG(ERROR) << "Not enough GPU memory for calculating,"
-            << " minimum 2.8 GiB needed";
-
         exit(EXIT_FAILURE);
     }
     
-    //========================================================================//
-    //  Set test info
-    //========================================================================//
     info_t info;
     uint8_t x[NUM_SIZE_8];
     uint8_t w[PK_SIZE_8];
     char seed[256] = "Va'esse deireadh aep eigean, va'esse eigh faidh'ar";
 
-    // generate secret key from seed
     GenerateSecKey(seed, 50, info.sk, info.skstr);
-    // generate public key from secret key
     GeneratePublicKey(info.skstr, info.pkstr, info.pk);
 
     const char ref_pkstr[PK_SIZE_4 + 1]
@@ -557,7 +417,6 @@ int main(int argc, char ** argv)
 
     if (!test)
     {
-        LOG(ERROR) << "OpenSSL: generated wrong public key";
         return EXIT_FAILURE;
     }
 
@@ -573,18 +432,11 @@ int main(int argc, char ** argv)
 
     sprintf(seed, "%d", 0);
 
-    // generate secret key from seed
     GenerateSecKey(seed, 1, x, info.skstr);
-    // generate public key from secret key
     GeneratePublicKey(info.skstr, info.pkstr, w);
 
-    //========================================================================//
-    //  Run solutions correctness tests
-    //========================================================================//
     if (NONCES_PER_ITER <= 0x3D5B84)
     {
-        LOG(INFO) << "Need WORKSPACE value for at least 4021125,"
-            << " skip solutions tests\n";
     }
     else
     {
@@ -593,8 +445,6 @@ int main(int argc, char ** argv)
 
         if (freeMem < MIN_FREE_MEMORY_PREHASH)
         {
-            LOG(INFO) << "Not enough GPU memory for keeping prehashes, "
-                << "skip test\n";
         }
         else
         {
@@ -603,13 +453,8 @@ int main(int argc, char ** argv)
         }
     }
 
-    //========================================================================//
-    //  Run performance tests
-    //========================================================================//
     info.keepPrehash = (freeMem >= MIN_FREE_MEMORY_PREHASH)? 1: 0;
     TestPerformance(&info, x, w);
-
-    LOG(INFO) << "Test suite executable is now terminated";
 
     return EXIT_SUCCESS;
 }
