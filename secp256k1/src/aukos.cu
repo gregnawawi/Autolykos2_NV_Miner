@@ -64,7 +64,7 @@ void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
 
 void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<rShare>* shQueue)
 {
-	AutolykosAlg solVerifier;
+	AukosAlg solVerifier;
     CUDA_CALL(cudaSetDevice(deviceId));
     cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
     char threadName[20];
@@ -73,10 +73,6 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 
     state_t state = STATE_KEYGEN;
     json_t request(0, REQ_LEN);
-
-    // hash context
-    // (212 + 4) bytes
-	//ctx_t ctx_h;
 
     uint8_t bound_h[NUM_SIZE_8];
     uint8_t mes_h[NUM_SIZE_8];
