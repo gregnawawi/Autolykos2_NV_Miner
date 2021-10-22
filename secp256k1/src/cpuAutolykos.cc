@@ -302,15 +302,11 @@ bool AutolykosAlg::RunAlg(
 
 	if (cmp < 0)
 	{
-		LOG(INFO) << "sol passed";	
 		return true;
 	}
 	else
 	{
-		LOG(INFO) << "sol not passed";
 		return false;
 	}
-
-
 
 }
