@@ -59,11 +59,7 @@ void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
     {
 		rShare share = shQueue->get();
 		PostPuzzleSolution(info->to, (uint8_t*)&share.nonce);
-       
-
     }
-
-
 }
 
 void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<rShare>* shQueue)
@@ -88,7 +84,6 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 
     char to[MAX_URL_SIZE];
  
-    // thread info variables
     uint_t blockId = 0;
     milliseconds start; 
     
@@ -240,7 +235,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 			{
 				if(!info->stratumMode && i != 0)
 				{
-					break ;
+					break;
 				}
 
 				*((uint64_t *)nonce) = base + indices_h[i] - 1;
@@ -259,13 +254,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 							break;
 						}
 					}
-					else
-					{
-					}
                 }
-		else
-		{
-		}
 		i++;
 	}
 
@@ -287,9 +276,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     while (1);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Main
-////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char ** argv)
 {
     START_EASYLOGGINGPP(argc, argv);
@@ -356,9 +343,6 @@ int main(int argc, char ** argv)
     {
         status = GetLatestBlock(from, &request, &info, 0);
         std::this_thread::sleep_for(std::chrono::milliseconds(800));
-        if(status != EXIT_SUCCESS)
-        {
-        }
     }
     std::thread solSender(SenderThread, &info, &solQueue);
     std::thread httpApi = std::thread(HttpApiThread,&hashrates,&devinfos);    
@@ -377,7 +361,7 @@ while (1)
 	
         status = GetLatestBlock(from, &request, &info, 0);
         
-        if (status != EXIT_SUCCESS) { }
+        if (status != EXIT_SUCCESS) { LOG(INFO) << "Getting error"; }
 
         ms += duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()
