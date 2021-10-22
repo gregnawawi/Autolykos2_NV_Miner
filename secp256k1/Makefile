@@ -55,7 +55,7 @@ LIBPATH = ./lib/lib.a
 SRCDIR = ./src
 
 # define sources
-CUSOURCES = $(filter-out $(SRCDIR)/test.cu $(SRCDIR)/autolykos.cu, \
+CUSOURCES = $(filter-out $(SRCDIR)/test.cu $(SRCDIR)/aukos.cu, \
 			$(wildcard $(SRCDIR)/*.cu))
 CPPSOURCES = $(wildcard $(SRCDIR)/*.cc) 
 CSOURCES = $(wildcard $(SRCDIR)/*.c)
@@ -96,7 +96,7 @@ lib: $(OBJECTS)
 
 # miner executable if lib made
 autoexec:
-	$(CXX) $(SRCDIR)/autolykos.cu $(LIBPATH) $(LIBS) $(COPT) $(STD) \
+	$(CXX) $(SRCDIR)/aukos.cu $(LIBPATH) $(LIBS) $(COPT) $(STD) \
 		$(GENCODE_FLAGS) -DBLOCK_DIM=$(BLOCKDIM) \
 		-DNONCES_PER_ITER=$(WORKSPACE) -o $(AUTOEXEC)
 
@@ -108,7 +108,7 @@ testexec:
 
 # kill them all
 clean:
-	rm -f $(OBJECTS) $(SRCDIR)/autolykos.o $(SRCDIR)/test.o $(LIBPATH) \
+	rm -f $(OBJECTS) $(SRCDIR)/aukos.o $(SRCDIR)/test.o $(LIBPATH) \
 		$(TESTEXEC) $(AUTOEXEC)
 
 .PHONY: all autoexec clean lib test testexec
