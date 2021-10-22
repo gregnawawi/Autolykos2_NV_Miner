@@ -1,10 +1,5 @@
 // processing.cc
 
-/*******************************************************************************
-
-    PROCESSING -- Puzzle cycle execution support
-
-*******************************************************************************/
 #include "../include/easylogging++.h"
 #include "../include/conversion.h"
 #include "../include/cryptography.h"
@@ -21,10 +16,6 @@
 #include <fstream>
 #include <string>
 
-////////////////////////////////////////////////////////////////////////////////
-//  Read config file
-////////////////////////////////////////////////////////////////////////////////
-// understands single-level json strings ({"a":"b", "c":"d", ...})
 int ReadConfig(
     const char *fileName,
     char *from,
@@ -36,7 +27,6 @@ int ReadConfig(
 
     if (!file.is_open())
     {
-        LOG(ERROR) << "Failure during opening configuration file";
         return EXIT_FAILURE;
     }
 
@@ -48,20 +38,16 @@ int ReadConfig(
     file.read(config.ptr, len);
     file.close();
 
-    // need to null terminate config string, at least for win32
     config.ptr[len] = '\0';
 
     jsmn_parser parser;
     jsmn_init(&parser);
-
-    VLOG(1) << "config string " << config.ptr;
 
     int numtoks = jsmn_parse(
         &parser, config.ptr, strlen(config.ptr), config.toks, CONF_LEN);
 
     if (numtoks < 0)
     {
-        LOG(ERROR) << "Jsmn failed to recognise configuration option";
         return EXIT_FAILURE;
     }
 
@@ -85,14 +71,10 @@ int ReadConfig(
             strncat(endJob, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
             strcat(endJob, "/mini/job/completed");
 
-            VLOG(1) << "from url " << from << " to url " << to;
-
             readNode = 1;
         }
         else
         {
-            LOG(INFO) << "Unrecognized config option, currently valid options are "
-                         "\"node\"";
         }
     }
 
@@ -102,14 +84,10 @@ int ReadConfig(
     }
     else
     {
-        LOG(ERROR) << "Incomplete config: node is not specified";
         return EXIT_FAILURE;
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Print public key
-////////////////////////////////////////////////////////////////////////////////
 int PrintPublicKey(const char *pkstr, char *str)
 {
     sprintf(
@@ -132,9 +110,6 @@ int PrintPublicKey(const uint8_t *pk, char *str)
     return EXIT_SUCCESS;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Print Autolukos puzzle solution
-////////////////////////////////////////////////////////////////////////////////
 int PrintPuzzleSolution(
     const uint8_t *nonce,
     const uint8_t *sol,
