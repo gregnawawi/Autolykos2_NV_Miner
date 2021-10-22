@@ -261,6 +261,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 					}
 					else
 					{
+					}
                 }
 		else
 		{
