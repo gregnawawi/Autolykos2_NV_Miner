@@ -1,3 +1,4 @@
+#define ELPP_NO_DEFAULT_LOG_FILE
 #include "../include/easylogging++.h"
 
 #if defined(AUTO_INITIALIZE_EASYLOGGINGPP)
