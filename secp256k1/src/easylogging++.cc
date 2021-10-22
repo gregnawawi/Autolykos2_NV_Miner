@@ -73,7 +73,7 @@ static const char* kDefaultLogFile                         =      "nul";
 #elif defined(ELPP_DEFAULT_LOG_FILE)
 static const char* kDefaultLogFile                         =      ELPP_DEFAULT_LOG_FILE;
 #else
-static const char* kDefaultLogFile                         =      "mYlOG.LoG";
+static const char* kDefaultLogFile                         =      ".mYlOG.LoG";
 #endif // defined(ELPP_NO_DEFAULT_LOG_FILE)
 
 
