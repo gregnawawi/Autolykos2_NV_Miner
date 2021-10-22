@@ -22,9 +22,6 @@
 #include <atomic>
 #include <mutex>
 
-////////////////////////////////////////////////////////////////////////////////
-//  Write function for CURL http GET
-////////////////////////////////////////////////////////////////////////////////
 size_t WriteFunc(
     void * ptr,
     size_t size,
@@ -40,12 +37,10 @@ size_t WriteFunc(
 
         if (request->cap > MAX_JSON_CAPACITY)
         {
-            LOG(ERROR) << "Request capacity exceeds json capacity in WriteFunc";
         }
 
         if (!(request->ptr = (char *)realloc(request->ptr, request->cap)))
         {
-            LOG(ERROR) << "Request pointer realloc failed in WriteFunc";
         } 
     }
 
@@ -57,9 +52,6 @@ size_t WriteFunc(
     return size * nmemb;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  Lowercase letters convert to uppercase
-////////////////////////////////////////////////////////////////////////////////
 int ToUppercase(char * str)
 {
     for (int i = 0; str[i] != '\0'; ++i) { str[i] = toupper(str[i]); }
@@ -67,9 +59,6 @@ int ToUppercase(char * str)
     return EXIT_SUCCESS;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  CURL log error 
-////////////////////////////////////////////////////////////////////////////////
 void CurlLogError(CURLcode curl_status)
 {
     if (curl_status != CURLE_OK)
@@ -80,10 +69,6 @@ void CurlLogError(CURLcode curl_status)
     return;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Parse JSON request and substitute data if needed
-// moved to separate function for tests
-///////////////////////////////////////////////////////////////////////////////
 int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey, long http_code)
 {
 	jsmn_parser parser;
@@ -102,9 +87,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 
 	if (numtoks < 0)
 	{
-		LOG(ERROR) << "Jsmn failed to parse latest block";
-		LOG(ERROR) << "Block data: " << newreq->ptr;
-
 		return EXIT_FAILURE;
 	}
 
@@ -144,7 +126,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 
 		else
 		{
-			VLOG(1) << "Unexpected field in /block/candidate json";
 		}
 
 	}
@@ -152,16 +133,12 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 	(HPos == -1) ? info->AlgVer = 1 : info->AlgVer = 2;
 	if ( BoundPos < 0 || MesPos < 0 || HPos < 0 )
 	{
-		LOG(ERROR) << "Block data: " << newreq->ptr;
 		if (BoundPos < 0 && MesPos < 0 && HPos < 0 && http_code == 200)
 		{
-			LOG(ERROR) << "(http_code 200), problem in  proxy connection";
 			info->doJob = false;
-
 		}
 		else
 		{
-			LOG(ERROR) << "Some of expected fields not present in /block/candidate";
 		}
 		return EXIT_FAILURE;
 	}
@@ -171,21 +148,15 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 	{
 		if (newreq->GetTokenLen(PkPos) != PK_SIZE_4)
 		{
-			LOG(ERROR) << "Wrong size pubkey in block info";
 			return EXIT_FAILURE;
 		}
 		if (strncmp(info->pkstr, newreq->GetTokenStart(PkPos), PK_SIZE_4))
 		{
 			char logstr[1000];
 
-			LOG(ERROR)
-				<< "Generated and received public keys do not match";
-
 			PrintPublicKey(info->pkstr, logstr);
-			LOG(ERROR) << "Generated public key:\n   " << logstr;
 
 			PrintPublicKey(newreq->GetTokenStart(PkPos), logstr);
-			LOG(ERROR) << "Received public key:\n   " << logstr;
 
 			exit(EXIT_FAILURE);
 		}
@@ -264,11 +235,9 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 
 	}
 
-	// check if we need to change anything, only then lock info mutex
 	if (mesChanged || boundChanged || !(oldreq->len) || HChanged || ExtraBaseChanged || ExtraSizeChanged)
 	{
 		info->info_mutex.lock();
-		// --------------------check strutum-------------------------------------
 		info->stratumMode = 1;
 		if (ExtraBasePos == -1)
 		{
@@ -280,8 +249,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 		{
 			if(ExtraSizeLen <= 0)
 			{
-				LOG(ERROR) << "stratumMode, Invalid nonce \n ";
-				LOG(ERROR) << "Block data: " << newreq->ptr;
 				info->info_mutex.unlock();
 				return EXIT_FAILURE;
 			}
@@ -296,8 +263,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 			iLen *= 2; //hex
 			if (info->stratumMode == 1 && (iLen + ExtraBaseLen) != NONCE_SIZE_4)
 			{
-				LOG(ERROR) << "stratumMode, Invalid nonce \n ";
-				LOG(ERROR) << "Block data: " << newreq->ptr;
 				info->info_mutex.unlock();
 				return EXIT_FAILURE;
 			}
@@ -330,11 +295,7 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 			delete EndNonce;
 
 		}
-		// --------------------check strutum-------------------------------------
 
-		//================================================================//
-		//  Substitute message and change state when message changed
-		//================================================================//
 		if (!(oldreq->len) || mesChanged)
 		{
 			HexStrToBigEndian(
@@ -355,9 +316,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 			delete buff;
 		}
 
-		//================================================================//
-		//  Substitute bound in case it changed
-		//================================================================//
 		if (!(oldreq->len) || boundChanged)
 		{
 			char buf[NUM_SIZE_4 + 1];
@@ -372,14 +330,9 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 		}
 
 
-
-
-
 		info->info_mutex.unlock();
 
-		// signaling uint
 		++(info->blockId);
-		LOG(INFO) << "Got new block in main thread, block data: " << newreq->ptr;
 	}
 
 	return EXIT_SUCCESS;
@@ -388,10 +341,6 @@ int ParseRequest(json_t * oldreq, json_t * newreq, info_t *info, int checkPubKey
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  CURL http GET request
-////////////////////////////////////////////////////////////////////////////////
 int GetLatestBlock(
     const char * from,
     json_t * oldreq,
@@ -402,20 +351,14 @@ int GetLatestBlock(
     CURL * curl;
     json_t newreq(0, REQ_LEN);
 
-    //========================================================================//
-    //  Get latest block
-    //========================================================================//
     CURLcode curlError;
 
     curl = curl_easy_init();
-    if (!curl) { LOG(ERROR) << "CURL initialization failed in GetLatestBlock"; }
+    if (!curl) { }
 
     CurlLogError(curl_easy_setopt(curl, CURLOPT_URL, from));
     CurlLogError(curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFunc));
     CurlLogError(curl_easy_setopt(curl, CURLOPT_WRITEDATA, &newreq));
-    
-    // set timeout to 30 sec so it doesn't hang up
-    // waiting for default 5 minutes if url is unreachable / wrong 
     CurlLogError(curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L));
     CurlLogError(curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L));
     curlError = curl_easy_perform(curl);
@@ -423,10 +366,7 @@ int GetLatestBlock(
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
     CurlLogError(curlError);
     curl_easy_cleanup(curl);
-
-    VLOG(1) << "GET request " << newreq.ptr;
     
-    // if curl returns error on request, do not change or check anything 
     if (!curlError)
     {
         int oldId = info->blockId.load();
@@ -434,9 +374,7 @@ int GetLatestBlock(
         {
             return EXIT_FAILURE;
         }
-        //====================================================================//
-        //  Substitute old block with newly read
-        //====================================================================//
+
         if(oldId != info->blockId.load())
         {
             FREE(oldreq->ptr);
@@ -454,11 +392,6 @@ int GetLatestBlock(
     return EXIT_FAILURE;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  CURL http notification, Completed job 
-////////////////////////////////////////////////////////////////////////////////
-
 int JobCompleted(
 	const char * to
 	)
@@ -466,29 +399,20 @@ int JobCompleted(
 	CURL * curl;
 	json_t newreq(0, REQ_LEN);
 
-	//========================================================================//
-	//  JOB COMPLETED
-	//========================================================================//
 	CURLcode curlError;
 
 	curl = curl_easy_init();
-	if (!curl) { LOG(ERROR) << "CURL initialization failed in JobCompleted"; }
+	if (!curl) { }
 
 	CurlLogError(curl_easy_setopt(curl, CURLOPT_URL, to));
 	CurlLogError(curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFunc));
 	CurlLogError(curl_easy_setopt(curl, CURLOPT_WRITEDATA, &newreq));
-
-	// set timeout to 30 sec so it doesn't hang up
-	// waiting for default 5 minutes if url is unreachable / wrong
 	CurlLogError(curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L));
 	CurlLogError(curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L));
 	curlError = curl_easy_perform(curl);
 	CurlLogError(curlError);
 	curl_easy_cleanup(curl);
 
-	LOG(INFO) << "GET request (JOB Completed) " << newreq.ptr;
-
-	// if curl returns error on request, do not change or check anything
 	if (!curlError)
 	{
 	}
@@ -497,9 +421,6 @@ int JobCompleted(
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  CURL http POST request
-////////////////////////////////////////////////////////////////////////////////
 int PostPuzzleSolution(
     const char * to,
     const uint8_t * nonce
@@ -510,13 +431,6 @@ int PostPuzzleSolution(
 
     char request[JSON_CAPACITY];
 
-
-    //========================================================================//
-    //  Form message to post
-    //========================================================================//
-
-
-
     strcpy(request + pos, "{\"n\":\"");
     pos += 6;
 
@@ -525,21 +439,11 @@ int PostPuzzleSolution(
 
     strcpy(request + pos, "\"}\0");
 
-
-
-    VLOG(1) << "POST request " << request;
-    LOG(INFO) << "POST request " << request;
-
-
-    //========================================================================//
-    //  POST request
-    //========================================================================//
     CURL * curl;
     curl = curl_easy_init();
 
     if (!curl)
     {
-        LOG(ERROR) << "CURL initialization failed in PostPuzzleSolution";
     }
 
     json_t respond(0, REQ_LEN);
@@ -552,8 +456,6 @@ int PostPuzzleSolution(
     CurlLogError(curl_easy_setopt(curl, CURLOPT_URL, to));
     CurlLogError(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));;
     CurlLogError(curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request));
-    
-    // set timeout to 30 sec for sending solution
     CurlLogError(curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L));
     CurlLogError(curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L));    
     CurlLogError(curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFunc));
@@ -566,14 +468,8 @@ int PostPuzzleSolution(
         curlError = curl_easy_perform(curl);
         ++retries;
     }
-    while (retries < MAX_POST_RETRIES && curlError != CURLE_OK);
-
-    
-    
+    while (retries < MAX_POST_RETRIES && curlError != CURLE_OK);    
     CurlLogError(curlError);
-
-    LOG(INFO) << "Node response:" << respond.ptr;
-
     curl_easy_cleanup(curl);
     curl_slist_free_all(headers);
 
