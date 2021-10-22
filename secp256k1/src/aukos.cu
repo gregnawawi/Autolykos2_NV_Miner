@@ -1,4 +1,4 @@
-// autolykos.cu
+// aukos.cu
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -17,7 +17,7 @@
 #include "../include/request.h"
 #include "../include/httpapi.h"
 #include "../include/queue.h"
-#include "../include/cpuAutolykos.h"
+#include "../include/cpuAukos.h"
 #include <ctype.h>
 #include <cuda.h>
 #include <curl/curl.h>
@@ -263,7 +263,6 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
                 indices_d, 0, MAX_SOLS*sizeof(uint32_t)
             ));
   			CUDA_CALL(cudaMemset(count_d,0,sizeof(uint32_t)));
-		
         }
        base += NONCES_PER_ITER;
        if (base > EndNonce)
@@ -369,29 +368,6 @@ while (1)
 
         ++curlcnt;
 
-        if (!(curlcnt % curltimes))
-        {
-            ms = milliseconds::zero();
-            std::stringstream hrBuffer;
-            hrBuffer << "Average H: ";
-            double totalHr = 0;
-            for(int i = 0; i < deviceCount; ++i)
-            {
-                if(!(curlcnt % (5*curltimes)))
-                {
-                    if(lastTimestamps[i] == timestamps[i])
-                    {
-                        hashrates[i] = 0;
-	            }
-                    lastTimestamps[i] = timestamps[i];
-                }
-                hrBuffer " " << hashrates[i];
-                totalHr += hashrates[i];
-            }
-            hrBuffer << "Total " << totalHr;
-            LOG(INFO) << hrBuffer.str();
-        }
-
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         int completeMine = end_jobs.load();
@@ -405,4 +381,4 @@ while (1)
     return EXIT_SUCCESS;
 }
 
-// autolykos.cu
+// aukos.cu
