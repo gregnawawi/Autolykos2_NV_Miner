@@ -6,7 +6,6 @@
 #include <vector>
 #include <deque>
 #include <iostream>
-// all that we need to send to node/pool
 struct rShare
 {
     rShare();
@@ -17,7 +16,6 @@ struct rShare
     uint64_t nonce;
 };
 
-//simple blocking queue for solutions sending
 template<class T> class BlockQueue
 {
     std::deque<T> cont;
@@ -52,7 +50,6 @@ public:
         return tmp;
     }
 };
-
 
 
 #endif
