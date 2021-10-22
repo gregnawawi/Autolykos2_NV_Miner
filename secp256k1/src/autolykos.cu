@@ -76,11 +76,6 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     el::Helpers::setThreadName(threadName);    
 
     state_t state = STATE_KEYGEN;
-
-    //========================================================================//
-    //  Host memory allocation
-    //========================================================================//
-    // CURL http request
     json_t request(0, REQ_LEN);
 
     // hash context
@@ -97,16 +92,11 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     uint_t blockId = 0;
     milliseconds start; 
     
-    //========================================================================//
-    //  Copy from global to thread local data
-    //========================================================================//
     info->info_mutex.lock();
 
     memcpy(mes_h, info->mes, NUM_SIZE_8);
     memcpy(bound_h, info->bound, NUM_SIZE_8);
     memcpy(to, info->to, MAX_URL_SIZE * sizeof(char));
-    // blockId = info->blockId.load();
-    //keepPrehash = info->keepPrehash;
     
     info->info_mutex.unlock();
 
