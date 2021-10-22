@@ -1,12 +1,6 @@
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
-/*******************************************************************************
-
-    DEFINITIONS -- Constants, Structs and Macros
-
-*******************************************************************************/
-
 #include "jsmn.h" 
 #include <stdio.h>
 #include <stdint.h>
@@ -16,58 +10,33 @@
 #include <mutex>
 #include <string.h>
 
-// constant message size
 #define CONST_MES_SIZE_8   8192 // 2^10
 
-// prehash continue position 
 #define CONTINUE_POS       36
 
-// k: number of indices
 #define K_LEN              32
 
-// N: number of precalculated hashes
 #define N_LEN              0x4000000 // 2^26
 
-// max solutions found in one iteration
 #define MAX_SOLS 16
 
-// number of nonces per thread
 #define NONCES_PER_THREAD  1
 
-// total number of nonces per iteration
-// #define NONCES_PER_ITER    0x200000 // 2^22
-//
-// kernel block size
-// #define BLOCK_DIM          64
-
-////////////////////////////////////////////////////////////////////////////////
-// Memory compatibility checks
-// should probably be now more correctly set
 #define MIN_FREE_MEMORY    2200000000
 #define MIN_FREE_MEMORY_PREHASH 7300000000
 
-// secret key and hash size
 #define NUM_SIZE_8         32
 
-// public key size
 #define PK_SIZE_8          33
 
-// nonce size
 #define NONCE_SIZE_8       8
 
-// height size
 #define HEIGHT_SIZE       4
 
-// index size
 #define INDEX_SIZE_8       4
 
 #define BUF_SIZE_8         128
 
-////////////////////////////////////////////////////////////////////////////////
-//  CONSTANTS: Q definition 32-bits and 64-bits words
-////////////////////////////////////////////////////////////////////////////////
-// Q definition for CUDA ptx pseudo-assembler commands
-// 32 bits
 #define qhi_s              "0xFFFFFFFF"
 #define q4_s               "0xFFFFFFFE"
 #define q3_s               "0xBAAEDCE6"
@@ -75,54 +44,33 @@
 #define q1_s               "0xBFD25E8C"
 #define q0_s               "0xD0364141"
 
-// Valid range: Q itself is multiplier-of-Q floor of 2^256
-// 64 bits
 #define Q3                 0xFFFFFFFFFFFFFFFF
 #define Q2                 0xFFFFFFFFFFFFFFFE
 #define Q1                 0xBAAEDCE6AF48A03B
 #define Q0                 0xBFD25E8CD0364141
 
-////////////////////////////////////////////////////////////////////////////////
-//  CONSTANTS: CURL http & JSMN specifiers
-////////////////////////////////////////////////////////////////////////////////
-// CURL number of retries to POST solution if failed
 #define MAX_POST_RETRIES   5
 
-// URL max size 
 #define MAX_URL_SIZE       1024
 
-//============================================================================//
-//  CURL requests
-//============================================================================//
-// default request capacity
 #define JSON_CAPACITY      256
 
-// maximal request capacity
 #define MAX_JSON_CAPACITY  8192
 
-// total JSON objects count
 #define REQ_LEN           11// 9
 
-// JSON position of message
 #define MES_POS            2
 
-// JSON position of bound
 #define BOUND_POS          4
 
-// JSON position of public key
 #define PK_POS             6
 
-// max JSON objects count for config file,
-// increased, to have more options if we need them
 #define CONF_LEN           21
 
-// config JSON position of secret key
 #define SEED_POS           2
 
-// config JSON position of latest block adress
 #define NODE_POS           4
 
-// config JSON position of keep prehash option
 #define KEEP_POS           6
 
 #define ERROR_STAT         "stat"
@@ -131,7 +79,6 @@
 #define ERROR_CURL         "Curl"
 #define ERROR_OPENSSL      "OpenSSL"
 
-// secret key and hash size
 #define NUM_SIZE_4         (NUM_SIZE_8 << 1)
 #define NUM_SIZE_32        (NUM_SIZE_8 >> 2)
 #define NUM_SIZE_64        (NUM_SIZE_8 >> 3)
@@ -139,23 +86,17 @@
 #define NUM_SIZE_8_BLOCK   (NUM_SIZE_32_BLOCK << 2)
 #define ROUND_NUM_SIZE_32  (NUM_SIZE_32_BLOCK * BLOCK_DIM)
 
-// public key sizes
 #define PK_SIZE_4          (PK_SIZE_8 << 1)
 #define PK_SIZE_32_BLOCK   (1 + NUM_SIZE_32 / BLOCK_DIM)
 #define PK_SIZE_8_BLOCK    (PK_SIZE_32_BLOCK << 2)
 #define ROUND_PK_SIZE_32   (PK_SIZE_32_BLOCK * BLOCK_DIM)
 #define COUPLED_PK_SIZE_32 (((PK_SIZE_8 << 1) + 3) >> 2)
 
-// nonce sizes
 #define NONCE_SIZE_4       (NONCE_SIZE_8 << 1)
 #define NONCE_SIZE_32      (NONCE_SIZE_8 >> 2)
 
-//============================================================================//
-//  Puzzle state
-//============================================================================//
 struct ctx_t;
 
-// puzzle data size
 #define DATA_SIZE_8                                                            \
 (                                                                              \
     (1 + (2 * PK_SIZE_8 + 2 + 3 * NUM_SIZE_8 + sizeof(ctx_t) - 1) / BLOCK_DIM) \
@@ -173,40 +114,28 @@ struct ctx_t;
     NONCES_PER_ITER * (NUM_SIZE_8  + (INDEX_SIZE_8 << 1)) + INDEX_SIZE_8       \
 )
 
-//============================================================================//
-//  GPU shared memory
-//============================================================================//
-// (mes || w) sizes
 #define NP_SIZE_32_BLOCK   (1 + (NUM_SIZE_32 << 1) / BLOCK_DIM)
 #define NP_SIZE_8_BLOCK    (NP_SIZE_32_BLOCK << 2)
 #define ROUND_NP_SIZE_32   (NP_SIZE_32_BLOCK * BLOCK_DIM)
 
-// (pk || mes || w) sizes
 #define PNP_SIZE_32_BLOCK                                                      \
 (1 + (COUPLED_PK_SIZE_32 + NUM_SIZE_32 - 1) / BLOCK_DIM)
 
 #define PNP_SIZE_8_BLOCK   (PNP_SIZE_32_BLOCK << 2)
 #define ROUND_PNP_SIZE_32  (PNP_SIZE_32_BLOCK * BLOCK_DIM)
 
-// (x || ctx) sizes
 #define NC_SIZE_32_BLOCK                                                       \
 (1 + (NUM_SIZE_32 + sizeof(ctx_t) - 1) / BLOCK_DIM)
 
 #define NC_SIZE_8_BLOCK    (NC_SIZE_32_BLOCK << 2)
 #define ROUND_NC_SIZE_32   (NC_SIZE_32_BLOCK * BLOCK_DIM)
 
-//============================================================================//
-//  Heuristic CUDA parameters
-//============================================================================//
-// mod 2^26 mask
 #define N_MASK             (N_LEN - 1)
 
-// number of threads per iteration
 #define THREADS_PER_ITER   (NONCES_PER_ITER / NONCES_PER_THREAD)
 
 typedef unsigned int uint_t;
 
-// autolukos puzzle state
 typedef enum
 {
     STATE_CONTINUE = 0,
@@ -216,17 +145,11 @@ typedef enum
 }
 state_t;
 
-// puzzle global info
 struct info_t
 {
-    // Mutex for reading/writing data from info_t safely
     std::mutex info_mutex;
 
-    // Mutex for curl usage/maybe future websocket
-    // not used now
-    // std::mutex io_mutex;
     uint8_t AlgVer;
-    // Puzzle data to read
     uint8_t bound[NUM_SIZE_8];
     uint8_t mes[NUM_SIZE_8];
     uint8_t sk[NUM_SIZE_8];
@@ -245,11 +168,9 @@ struct info_t
 	uint8_t extraNonceStart[NONCE_SIZE_8];
 	uint8_t extraNonceEnd[NONCE_SIZE_8];
 
-    // Increment when new block is sent by node
     std::atomic<uint_t> blockId; 
 };
 
-// json string for CURL http requests and config 
 struct json_t
 {
     size_t cap;
@@ -261,10 +182,8 @@ struct json_t
     json_t(const json_t & newjson);
     ~json_t(void);
 
-    // reset len to zero
     void Reset(void) { len = 0; return; }
 
-    // tokens access methods
     int GetTokenStartPos(const int pos) { return toks[pos].start; }
     int GetTokenEndPos(const int pos) { return toks[pos].end; }
     int GetTokenLen(const int pos) { return toks[pos].end - toks[pos].start; }
@@ -272,33 +191,25 @@ struct json_t
     char * GetTokenStart(const int pos) { return ptr + toks[pos].start; }
     char * GetTokenEnd(const int pos) { return ptr + toks[pos].end; }
 
-    // token name check
     int jsoneq(const int pos, const char * str);
 };
 
 struct ctx_t
 {
-    // input buffer
     uint8_t b[BUF_SIZE_8];
-    // chained state
     uint64_t h[8];
-    // total number of bytes
     uint64_t t[2];
-    // counter for b
     uint32_t c;
 };
 
 struct uctx_t
 {
-    // chained state
     uint64_t h[8];
-    // total number of bytes
     uint64_t t[2];
 };
 
 #define CTX_SIZE sizeof(ctx_t)
 
-// initialization vector
 #define B2B_IV(v)                                                              \
 do                                                                             \
 {                                                                              \
@@ -313,10 +224,8 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// cyclic right rotation
 #define ROTR64(x, y) (((x) >> (y)) ^ ((x) << (64 - (y))))
 
-// G mixing function
 #define B2B_G(v, a, b, c, d, x, y)                                             \
 do                                                                             \
 {                                                                              \
@@ -335,7 +244,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// mixing rounds
 #define B2B_MIX(v, m)                                                          \
 do                                                                             \
 {                                                                              \
@@ -449,7 +357,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-// 2b initialization
 #define B2B_INIT(ctx, aux)                                                     \
 do                                                                             \
 {                                                                              \
@@ -631,9 +538,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-////////////////////////////////////////////////////////////////////////////////
-//  Little-Endian to Big-Endian convertation
-////////////////////////////////////////////////////////////////////////////////
 #define REVERSE_ENDIAN(p)                                                      \
     ((((uint64_t)((uint8_t *)(p))[0]) << 56) ^                                 \
     (((uint64_t)((uint8_t *)(p))[1]) << 48) ^                                  \
@@ -659,9 +563,6 @@ do                                                                             \
 }                                                                              \
 while (0)
 
-////////////////////////////////////////////////////////////////////////////////
-//  Wrappers for function calls
-////////////////////////////////////////////////////////////////////////////////
 #define FREE(x)                                                                \
 do                                                                             \
 {                                                                              \
@@ -678,13 +579,6 @@ do                                                                             \
 {                                                                              \
     if ((x) != cudaSuccess)                                                    \
     {                                                                          \
-        fprintf(stderr, "ERROR:  CUDA failed at %s: %d\n",__FILE__,__LINE__);  \
-        fprintf(stderr, "CUDA error code %d\n", x);                            \
-        fprintf(                                                               \
-            stderr, "Prog is now terminated\n"                                \
-            "========================================"                         \
-            "========================================\n"                       \
-        );                                                                     \
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -695,7 +589,6 @@ do                                                                             \
 {                                                                              \
     if (!(func))                                                               \
     {                                                                          \
-        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -706,7 +599,6 @@ do                                                                             \
 {                                                                              \
     if (!((res) = (func)))                                                     \
     {                                                                          \
-        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -717,7 +609,6 @@ do                                                                             \
 {                                                                              \
     if ((func) != (status))                                                    \
     {                                                                          \
-        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
@@ -728,7 +619,6 @@ do                                                                             \
 {                                                                              \
     if ((res = func) != (status))                                              \
     {                                                                          \
-        fprintf(stderr, "ERROR:  " name " failed at %s: %d\n",__FILE__,__LINE__);\
         exit(EXIT_FAILURE);                                                    \
     }                                                                          \
 }                                                                              \
