@@ -58,7 +58,6 @@ void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
     while(true)
     {
 		rShare share = shQueue->get();
-		LOG(INFO) << "S: " ;
 		PostPuzzleSolution(info->to, (uint8_t*)&share.nonce);
        
 
@@ -118,8 +117,6 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     
     if (freeMem < MIN_FREE_MEMORY)
     {
-        LOG(ERROR) << "Not enough G memory for calculating,"
-            << " minimum 2.8 GiB needed";
         return;
     }
 
@@ -222,31 +219,21 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
             info->info_mutex.unlock();
 
             blockId = controlId;
-            
-
-            VLOG(1) << "Gen new keypair,"
-                << " copying new data in device memory now";
 
             CUDA_CALL(cudaMemcpy(
                 ((uint8_t *)data_d), mes_h, NUM_SIZE_8,
                 cudaMemcpyHostToDevice
             ));
 
-            VLOG(1) << "S";
-
             Prehash(hashes_d,height);
-            VLOG(1) << "InitMini";           
-			LOG(INFO) << "G " << deviceId << " started";            
             cpyBSymbol(bound_h);
             
             CUDA_CALL(cudaDeviceSynchronize());
             state = STATE_CONTINUE;
         }
 
-        VLOG(1) << "Procedure";
         BlockMiniStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
         BlockMiniStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
-        VLOG(1) << "Try";
         if (blockId != info->blockId.load()) { continue;}
 
 		CUDA_CALL(cudaMemcpy(
@@ -284,12 +271,9 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
 					}
 					else
 					{
-                        LOG(INFO) << " Problem. Nonce: " << *((uint64_t *)nonce);
-					}
                 }
 		else
 		{
-			LOG(INFO) << "nonce: " << *((uint64_t *)nonce) << " endNonce:  " << endNonceT;
 		}
 		i++;
 	}
@@ -330,10 +314,8 @@ int main(int argc, char ** argv)
 
     if (cudaGetDeviceCount(&deviceCount) != cudaSuccess)
     {
-        LOG(ERROR) << "Error G";
         return EXIT_FAILURE;
     }
-    LOG(INFO) << "Using " << deviceCount << " G";
 
     char confName[14] = "./.aux";
     char * fileName = (argc == 1)? confName: argv[1];
@@ -344,11 +326,8 @@ int main(int argc, char ** argv)
     
     BlockQueue<rShare> solQueue;
 
-    LOG(INFO) << "Conf " << fileName;
-
     if (access(fileName, F_OK) == -1)
     {
-        LOG(ERROR) << "Conf " << fileName << " is not found";
         return EXIT_FAILURE;
     }
 
@@ -388,7 +367,6 @@ int main(int argc, char ** argv)
         std::this_thread::sleep_for(std::chrono::milliseconds(800));
         if(status != EXIT_SUCCESS)
         {
-            LOG(INFO) << "Waiting...";
         }
     }
     std::thread solSender(SenderThread, &info, &solQueue);
@@ -408,7 +386,7 @@ while (1)
 	
         status = GetLatestBlock(from, &request, &info, 0);
         
-        if (status != EXIT_SUCCESS) { LOG(INFO) << "Getting error"; }
+        if (status != EXIT_SUCCESS) { }
 
         ms += duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()
@@ -418,9 +396,6 @@ while (1)
 
         if (!(curlcnt % curltimes))
         {
-            LOG(INFO) << "Avg curling time "
-                << ms.count() / (double)curltimes << " ms";
-            LOG(INFO) << "Current B candidate: " << request.ptr;
             ms = milliseconds::zero();
             std::stringstream hrBuffer;
             hrBuffer << "Average H: ";
@@ -435,11 +410,10 @@ while (1)
 	            }
                     lastTimestamps[i] = timestamps[i];
                 }
-                hrBuffer << "G" << i << " " << hashrates[i] << " Mega H per s ";
+                hrBuffer " " << hashrates[i] << " ";
                 totalHr += hashrates[i];
-
             }
-            hrBuffer << "Total " << totalHr << " Mega H per s ";
+            hrBuffer << "Total " << totalHr << " ";
             LOG(INFO) << hrBuffer.str();
         }
 
