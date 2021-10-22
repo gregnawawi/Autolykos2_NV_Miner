@@ -1,7 +1,7 @@
-#include "../include/cpuAutolykos.h"
+#include "../include/cpuAukos.h"
 
 
-AutolykosAlg::AutolykosAlg()
+AukosAlg::AukosAlg()
 {
 	m_str = new char[64];
 	bound_str = new char[100];
@@ -32,13 +32,13 @@ AutolykosAlg::AutolykosAlg()
 }
 
 
-AutolykosAlg::~AutolykosAlg()
+AukosAlg::~AukosAlg()
 {
 
 }
 
 
-void AutolykosAlg::Blake2b256(const char * in,
+void AukosAlg::Blake2b256(const char * in,
 	const int len,
 	uint8_t * output,
 	char * outstr)
@@ -46,18 +46,12 @@ void AutolykosAlg::Blake2b256(const char * in,
 	ctx_t ctx;
 	uint64_t aux[32];
 
-	//====================================================================//
-	//  Initialize context
-	//====================================================================//
 	memset(ctx.b, 0, 128);
 	B2B_IV(ctx.h);
 	ctx.h[0] ^= 0x01010000 ^ NUM_SIZE_8;
 	memset(ctx.t, 0, 16);
 	ctx.c = 0;
 
-	//====================================================================//
-	//  Hash message
-	//====================================================================//
 	for (int i = 0; i < len; ++i)
 	{
 		if (ctx.c == 128) { HOST_B2B_H(&ctx, aux); }
@@ -74,9 +68,7 @@ void AutolykosAlg::Blake2b256(const char * in,
 
 }
 
-
-
-void AutolykosAlg::GenIdex(const char * in, const int len, uint32_t* index)
+void AukosAlg::GenIdex(const char * in, const int len, uint32_t* index)
 {
 	int a = INDEX_SIZE_8;
 	int b = K_LEN;
@@ -106,8 +98,6 @@ void AutolykosAlg::GenIdex(const char * in, const int len, uint32_t* index)
 	int sliceIndex = 0;
 	for (int k = 0; k < K_LEN; k++)
 	{
-
-
 		uint8_t tmp[4];
 		memcpy(tmp, sk + sliceIndex, 4);
 		memcpy(&tmpInd[k], sk + sliceIndex, 4);
@@ -120,11 +110,9 @@ void AutolykosAlg::GenIdex(const char * in, const int len, uint32_t* index)
 		ind[k] = ind[k] % N_LEN;
 		sliceIndex++;
 	}
-
 }
 
-
-void AutolykosAlg::hashFn(const char * in, const int len, uint8_t * output)
+void AukosAlg::hashFn(const char * in, const int len, uint8_t * output)
 {
 	char *skstr = new char[len * 3];
 	Blake2b256(in, len, output, skstr);
@@ -134,7 +122,7 @@ void AutolykosAlg::hashFn(const char * in, const int len, uint8_t * output)
 	delete skstr;
 }
 
-bool AutolykosAlg::RunAlg(
+bool AukosAlg::RunAlg(
 	uint8_t *message,
 	uint8_t *nonce,
 	uint8_t *bPool,
@@ -197,13 +185,8 @@ bool AutolykosAlg::RunAlg(
 	memcpy(seed + NUM_SIZE_8 - 1 + NUM_SIZE_8, beN, NONCE_SIZE_8);
 	GenIdex((const char*)seed, NUM_SIZE_8 - 1 + NUM_SIZE_8 + NONCE_SIZE_8, index);
 
-
-
-
-
 	uint8_t ret[32][NUM_SIZE_8];
 	int ll = sizeof(uint32_t) + CONST_MES_SIZE_8 + PK_SIZE_8 + NUM_SIZE_8 + PK_SIZE_8;
-
 
 	BIGNUM* bigsum = BN_new();
 	CALL(BN_dec2bn(&bigsum, "0"), ERROR_OPENSSL);
@@ -256,7 +239,6 @@ bool AutolykosAlg::RunAlg(
 		LB = BN_bn2dec(bigres);
 
 		BN_bn2bin(bigsum, f);
-
 
 	}
 
