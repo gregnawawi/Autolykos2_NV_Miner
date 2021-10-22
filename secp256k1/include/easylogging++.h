@@ -1,18 +1,3 @@
-//
-//  Bismillah ar-Rahmaan ar-Raheem
-//
-//  Easylogging++ v9.96.7
-//  Single-header only, cross-platform logging library for C++ applications
-//
-//  Copyright (c) 2012-2018 Zuhd Web Services
-//  Copyright (c) 2012-2018 @abumusamq
-//
-//  This library is released under the MIT Licence.
-//  https://github.com/zuhd-org/easyloggingpp/blob/master/LICENSE
-//
-//  https://zuhd.org
-//  http://muflihun.com
-//
 #define ELPP_THREAD_SAFE
 #define ELPP_WINSOCK2
 
