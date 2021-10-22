@@ -3,8 +3,6 @@
 #include "definitions.h"
 #include "easylogging++.h"
 
-
-
 #include <curl/curl.h>
 #include <inttypes.h>
 #include <iostream>
@@ -20,7 +18,6 @@
 #include <thread>
 #include <vector>
 #include <random>
-
 
 #include "cryptography.h"
 #include "conversion.h"
@@ -39,13 +36,13 @@
 #include <random>
 
 
-class AutolykosAlg
+class AukosAlg
 {
 public:
 	unsigned long long CONST_MESS[CONST_MES_SIZE_8 / 8];
 
-	AutolykosAlg();
-	~AutolykosAlg();
+	AukosAlg();
+	~AukosAlg();
 	int m_iAlgVer;
 	void Blake2b256(const char * in, const int len, uint8_t * output, char * outstr);
 	void GenIdex(const char * in, const int len, uint32_t* index);
