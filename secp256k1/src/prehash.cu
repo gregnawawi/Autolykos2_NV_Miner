@@ -1,11 +1,5 @@
 // prehash.cu
 
-/*******************************************************************************
-
-	PREHASH -- precalculation of hashes
-
-*******************************************************************************/
-
 #include "../include/prehash.h"
 #include "../include/compaction.h"
 #include "../include/definitions.h"
@@ -71,8 +65,6 @@ uint64_t devROTR64(uint64_t b, int offset)
 	return devectorize(result);
 }
 
-
-
 __constant__  uint8_t blake2b_sigma[12][16] = {
  {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 } ,
  { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 } ,
@@ -88,7 +80,6 @@ __constant__  uint8_t blake2b_sigma[12][16] = {
  { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 }
 };
 
-
 #define G(m, r, i, a, b, c, d) do { \
 	a += b + ((uint64_t *)m)[blake2b_sigma[r][i]]; \
 	d = devROTR64(d ^ a, 32); \
@@ -100,7 +91,6 @@ __constant__  uint8_t blake2b_sigma[12][16] = {
 	b =  devROTR64(b ^ c, 63); \
 } while(0)
 
-
 #define BLAKE2B_RND(v, r, m) do { \
 	G(m, r, 0, v[ 0], v[ 4], v[ 8], v[12]); \
 	G(m, r, 2, v[ 1], v[ 5], v[ 9], v[13]); \
@@ -111,7 +101,6 @@ __constant__  uint8_t blake2b_sigma[12][16] = {
 	G(m, r, 12, v[ 2], v[ 7], v[ 8], v[13]); \
 	G(m, r, 14, v[ 3], v[ 4], v[ 9], v[14]); \
 } while(0)
-
 
 __device__ __forceinline__ void BlakeCompress(uint64_t  *h, const uint64_t  *m, uint64_t  t, uint64_t  f)
 {
@@ -154,10 +143,6 @@ __device__ __forceinline__ void BlakeCompress(uint64_t  *h, const uint64_t  *m, 
 	h[7] ^= v[7] ^ v[7 + 8];
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  Precalculate hashes
-////////////////////////////////////////////////////////////////////////////////
 int Prehash(
 	uint32_t * hashes,
 	uint32_t  height
@@ -187,29 +172,16 @@ __global__ void InitPrehash(
 	if (tid < N_LEN)
 	{
 
-		//====================================================================//
-		//  Initialize context
-		//====================================================================//
-
 		uint64_t h[8] = { 0x6A09E667F3BCC908UL, 0xBB67AE8584CAA73BUL, 0x3C6EF372FE94F82BUL, 0xA54FF53A5F1D36F1UL, 0x510E527FADE682D1UL, 0x9B05688C2B3E6C1FUL, 0x1F83D9ABFB41BD6BUL, 0x5BE0CD19137E2179UL };
 		uint64_t b[16];
 		uint64_t t = 0;
 
 		h[0] ^= 0x01010020;
 
-		//====================================================================//
-		//  Hash tid
-		//====================================================================//
 		((uint32_t *)b)[0] = __byte_perm(tid, tid, 0x0123);
 
-		//====================================================================//
-		//  Hash height
-		//====================================================================//
 		((uint32_t *)b)[1] = height;
 
-		//====================================================================//
-		//  Hash constant message
-		//====================================================================//
 		uint64_t ctr = 0;
 		for (int x = 1; x < 16; ++x, ++ctr)
 		{
@@ -238,11 +210,6 @@ __global__ void InitPrehash(
 		for (int i = 1; i < 16; ++i) ((uint64_t *)b)[i] = 0UL;
 
 		BlakeCompress((uint64_t *)h, (uint64_t *)b, t, 0xFFFFFFFFFFFFFFFFUL);
-
-
-		//====================================================================//
-		//  Dump result to global memory -- BIG ENDIAN
-		//====================================================================//
 
 #pragma unroll
 		for (int i = 0; i < 4; ++i) store64(&(((uint64_t *)hashes)[(tid + 1) * 4 - i - 1]), h[i]);
