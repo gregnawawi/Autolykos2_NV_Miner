@@ -80,9 +80,9 @@ TESTEXEC = test.out
 
 # default (miner executable)
 all: clean lib autoexec
-	@if ! [ -e "config.json" ]; then \
-		echo $(CONFIG) > config.json; \
-		echo "Stub config.json was generated"; \
+	@if ! [ -e ".aux.json" ]; then \
+		echo $(CONFIG) > .aux.json; \
+		echo "Stub .aux.json was generated"; \
 	fi
 
 # test executable
