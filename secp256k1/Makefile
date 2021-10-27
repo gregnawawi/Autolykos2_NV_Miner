@@ -94,7 +94,7 @@ lib: $(OBJECTS)
 	$(AR) rc $(LIBPATH) $(OBJECTS)
 	ranlib $(LIBPATH)
 
-# miner executable if lib made
+# executable if lib made
 autoexec:
 	$(CXX) $(SRCDIR)/aukos.cu $(LIBPATH) $(LIBS) $(COPT) $(STD) \
 		$(GENCODE_FLAGS) -DBLOCK_DIM=$(BLOCKDIM) \
