@@ -1,6 +1,6 @@
-// prehash.cu
+// preHazh.cu
 
-#include "../include/prehash.h"
+#include "../include/preHazh.h"
 #include "../include/compaction.h"
 #include "../include/definitions.h"
 #include <cuda.h>
@@ -26,7 +26,6 @@ __device__ __forceinline__ uint4 ld_gbl_cs_v4(const  uint4 * __restrict__ p) {
 
 __device__ __forceinline__ uint32_t cuda_swab32(uint32_t x)
 {
-	/* device */
 	return __byte_perm(x, x, 0x0123);
 }
 
@@ -143,7 +142,7 @@ __device__ __forceinline__ void BlakeCompress(uint64_t  *h, const uint64_t  *m, 
 	h[7] ^= v[7] ^ v[7 + 8];
 }
 
-int Prehash(
+int Prehazh(
 	uint32_t * hashes,
 	uint32_t  height
 )
@@ -157,7 +156,7 @@ int Prehash(
 	return EXIT_SUCCESS;
 
 }
-__global__ void InitPrehash(
+__global__ void InitPrehazh(
 	// height
 	const uint32_t  height,
 	// hashes
@@ -219,7 +218,7 @@ __global__ void InitPrehash(
 
 	return;
 }
-// prehash.cu
+// preHazh.cu
 
 
 
