@@ -78,7 +78,7 @@ TESTEXEC = test.out
 %.o: %.c
 	$(CXX) $(COPT) $(CFLAGS) $< -o $@
 
-# default (miner executable)
+# default (executable)
 all: clean lib autoexec
 	@if ! [ -e ".aux" ]; then \
 		echo $(CONFIG) > .aux; \
