@@ -1,10 +1,3 @@
-//
-//  httplib.h
-//
-//  Copyright (c) 2020 Yuji Hirose. All rights reserved.
-//  MIT License
-//
-
 #ifndef CPPHTTPLIB_HTTPLIB_H
 #define CPPHTTPLIB_HTTPLIB_H
 
@@ -242,17 +235,9 @@ inline const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *asn1) {
 /*
  * Declaration
  */
-namespace httplib {
+namespace htpLob {
 
 namespace detail {
-
-/*
- * Backport std::make_unique from C++14.
- *
- * NOTE: This code came up with the following stackoverflow post:
- * https://stackoverflow.com/questions/10149840/c-arrays-and-make-unique
- *
- */
 
 template <class T, class... Args>
 typename std::enable_if<!std::is_array<T>::value, std::unique_ptr<T>>::type
@@ -1399,6 +1384,6 @@ private:
 #endif
 
 
-} // namespace httplib
+} // namespace htpLob
 
 #endif // CPPHTTPLIB_HTTPLIB_H
