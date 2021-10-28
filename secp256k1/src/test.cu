@@ -3,8 +3,8 @@
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
 #include "../include/easylogging++.h"
-#include "../include/mini.h"
-#include "../include/prehash.h"
+#include "../include/hkey.h"
+#include "../include/preHazh.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
 #include <ctype.h>
@@ -97,14 +97,13 @@ int TestSolutions(
         cudaMemcpyHostToDevice
     ));
 
-    BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
+    BlockHkey<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
         bound_d, data_d, base, hashes_d, res_d, indices_d
     );
 
     uint64_t res_h[NUM_SIZE_64];
     uint32_t solFound = 0;
     uint32_t nonce;
-    // copy results to host
     CUDA_CALL(cudaMemcpy(
         res_h, res_d, NUM_SIZE_8,
         cudaMemcpyDeviceToHost
@@ -113,7 +112,7 @@ int TestSolutions(
         &nonce, indices_d, sizeof(uint32_t),
         cudaMemcpyDeviceToHost
     ));
-    LOG(INFO) << "Found nonce: " << nonce-1;
+    LOG(INFO) << "FNnce: " << nonce-1;
     if(nonce != 0x3381BF)
     {
         exit(EXIT_FAILURE);
@@ -197,7 +196,7 @@ int TestPerformance(
         ch::system_clock::now().time_since_epoch()
     ) - start;
 
-    LOG(INFO) << "Prehash time: " << ms.count() << " ms";
+    LOG(INFO) << "Pre Time: " << ms.count() << " ms";
 
     if (info->keepPrehash)
     {
@@ -238,7 +237,7 @@ int TestPerformance(
 
     for ( ; ms.count() < 60000; ++iter)
     {
-        BlockMini<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
+        BlockHkey<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
             bound_d, data_d, base, hashes_d, res_d, indices_d
         );
 
