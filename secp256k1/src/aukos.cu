@@ -15,7 +15,7 @@
 #include "../include/processing.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
-#include "../include/htpApi.h.h"
+#include "../include/htpApi.h"
 #include "../include/queue.h"
 #include "../include/cpuAukos.h"
 #include <ctype.h>
