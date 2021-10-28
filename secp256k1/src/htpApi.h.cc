@@ -1,5 +1,5 @@
-#include "../include/httpapi.h"
-using namespace httplib;
+#include "../include/htpApi.h.h"
+using namespace htpLob;
 
 
 inline int key(std::pair<int,int> x)
@@ -8,7 +8,7 @@ inline int key(std::pair<int,int> x)
 }
 
 
-void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>>* props)
+void HtpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>>* props)
 {
     std::chrono::time_point<std::chrono::system_clock> timeStart;
     timeStart = std::chrono::system_clock::now();
@@ -37,8 +37,8 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
             unsigned int devcount;
             result = nvmlDeviceGetCount(&devcount);
             bool first = true;
-            strBuf << " \"gpus\":" << devcount << " , ";
-            strBuf << " \"devices\" : [ " ;
+            strBuf << " \"Gs\":" << devcount << " , ";
+            strBuf << " \"Ds\" : [ " ;
 
             for(int i = 0; i < devcount; i++)
             {
@@ -85,14 +85,14 @@ void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int
                     result = nvmlDeviceGetFanSpeed ( device, &fanspeed );
                     result = nvmlDeviceGetPowerUsage ( device, &power );
                     result = nvmlDeviceGetTemperature ( device, NVML_TEMPERATURE_GPU, &temp );
-                    deviceInfo << " \"fan\" : " << fanspeed << " , ";
-                    deviceInfo << " \"power\" : " << power/1000 << " , ";
-                    deviceInfo << " \"temperature\" : " << temp << " }";
+                    deviceInfo << " \"FAAn\" : " << fanspeed << " , ";
+                    deviceInfo << " \"Powr\" : " << power/1000 << " , ";
+                    deviceInfo << " \"teMp\" : " << temp << " }";
                     strBuf << deviceInfo.str();
                 }
             }
 
-            strBuf << " ] , \"total\": " << totalHr  ;
+            strBuf << " ] , \"TtL\": " << totalHr  ;
 
 
             result = nvmlShutdown();
