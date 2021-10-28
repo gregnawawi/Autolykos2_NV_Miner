@@ -63,13 +63,13 @@ int ReadConfig(
             strncat(
                 from, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
 
-            strcat(from, "/mini/candidate");
+            strcat(from, "/hkey/cndt");
 
             strncat(to, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(to, "/mini/solution");
+            strcat(to, "/hkey/sool");
 
             strncat(endJob, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(endJob, "/mini/job/completed");
+            strcat(endJob, "/hkey/job/compltd");
 
             readNode = 1;
         }
