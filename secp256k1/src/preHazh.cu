@@ -148,7 +148,7 @@ int Prehazh(
 )
 {
 
-	InitPrehash << <1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM >> > (
+	InitPrehazh << <1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM >> > (
 		height, hashes
 		);
 	CUDA_CALL(cudaPeekAtLastError());
@@ -157,9 +157,7 @@ int Prehazh(
 
 }
 __global__ void InitPrehazh(
-	// height
 	const uint32_t  height,
-	// hashes
 	uint32_t * hashes
 )
 {
