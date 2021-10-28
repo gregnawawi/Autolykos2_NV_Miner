@@ -9,7 +9,7 @@
 #include <sstream>
 #include <chrono>
 
-void HttpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>>* props);
+void HtpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>>* props);
 
 
 #endif
