@@ -80,8 +80,6 @@ size_t to_utf8(int code, char *buff) {
   return 0;
 }
 
-// NOTE: This code came up with the following stackoverflow post:
-// https://stackoverflow.com/questions/180947/base64-decode-snippet-in-c
 std::string base64_encode(const std::string &in) {
   static const auto lookup =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -130,7 +128,6 @@ bool is_valid_path(const std::string &path) {
   }
 
   while (i < path.size()) {
-    // Read component
     auto beg = i;
     while (i < path.size() && path[i] != '/') {
       i++;
@@ -148,7 +145,6 @@ bool is_valid_path(const std::string &path) {
       level++;
     }
 
-    // Skip slash
     while (i < path.size() && path[i] == '/') {
       i++;
     }
@@ -299,8 +295,6 @@ template <class Fn> void split(const char *b, const char *e, char d, Fn fn) {
   }
 }
 
-// NOTE: until the read size reaches `fixed_buffer_size`, use `fixed_buffer`
-// to store data. The call can set memory on stack for performance.
 class stream_line_reader {
 public:
   stream_line_reader(Stream &strm, char *fixed_buffer, size_t fixed_buffer_size)
@@ -636,7 +630,6 @@ template <typename BindOrConnect>
 socket_t create_socket(const char *host, int port, int socket_flags,
                        bool tcp_nodelay, SocketOptions socket_options,
                        BindOrConnect bind_or_connect) {
-  // Get address info
   struct addrinfo hints;
   struct addrinfo *result;
 
@@ -656,24 +649,9 @@ socket_t create_socket(const char *host, int port, int socket_flags,
   }
 
   for (auto rp = result; rp; rp = rp->ai_next) {
-    // Create a socket
 #ifdef _WIN32
     auto sock = WSASocketW(rp->ai_family, rp->ai_socktype, rp->ai_protocol,
                            nullptr, 0, WSA_FLAG_NO_HANDLE_INHERIT);
-    /**
-     * Since the WSA_FLAG_NO_HANDLE_INHERIT is only supported on Windows 7 SP1
-     * and above the socket creation fails on older Windows Systems.
-     *
-     * Let's try to create a socket the old way in this case.
-     *
-     * Reference:
-     * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsasocketa
-     *
-     * WSA_FLAG_NO_HANDLE_INHERIT:
-     * This flag is supported on Windows 7 with SP1, Windows Server 2008 R2 with
-     * SP1, and later
-     *
-     */
     if (sock == INVALID_SOCKET) {
       sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
     }
@@ -941,71 +919,71 @@ find_content_type(const std::string &path,
 
 const char *status_message(int status) {
   switch (status) {
-  case 100: return "Continue";
-  case 101: return "Switching Protocol";
-  case 102: return "Processing";
-  case 103: return "Early Hints";
+  case 100: return "C";
+  case 101: return "S P";
+  case 102: return "P";
+  case 103: return "E H";
   case 200: return "OK";
-  case 201: return "Created";
-  case 202: return "Accepted";
-  case 203: return "Non-Authoritative Information";
-  case 204: return "No Content";
-  case 205: return "Reset Content";
-  case 206: return "Partial Content";
-  case 207: return "Multi-Status";
-  case 208: return "Already Reported";
+  case 201: return "C";
+  case 202: return "A";
+  case 203: return "NA Information";
+  case 204: return "N C";
+  case 205: return "R C";
+  case 206: return "P C";
+  case 207: return "M-S";
+  case 208: return "A R";
   case 226: return "IM Used";
-  case 300: return "Multiple Choice";
-  case 301: return "Moved Permanently";
-  case 302: return "Found";
-  case 303: return "See Other";
-  case 304: return "Not Modified";
-  case 305: return "Use Proxy";
-  case 306: return "unused";
-  case 307: return "Temporary Redirect";
-  case 308: return "Permanent Redirect";
-  case 400: return "Bad Request";
-  case 401: return "Unauthorized";
-  case 402: return "Payment Required";
-  case 403: return "Forbidden";
-  case 404: return "Not Found";
-  case 405: return "Method Not Allowed";
-  case 406: return "Not Acceptable";
-  case 407: return "Proxy Authentication Required";
-  case 408: return "Request Timeout";
-  case 409: return "Conflict";
-  case 410: return "Gone";
-  case 411: return "Length Required";
-  case 412: return "Precondition Failed";
-  case 413: return "Payload Too Large";
-  case 414: return "URI Too Long";
-  case 415: return "Unsupported Media Type";
-  case 416: return "Range Not Satisfiable";
-  case 417: return "Expectation Failed";
-  case 418: return "I'm a teapot";
-  case 421: return "Misdirected Request";
-  case 422: return "Unprocessable Entity";
-  case 423: return "Locked";
-  case 424: return "Failed Dependency";
-  case 425: return "Too Early";
-  case 426: return "Upgrade Required";
-  case 428: return "Precondition Required";
-  case 429: return "Too Many Requests";
-  case 431: return "Request Header Fields Too Large";
-  case 451: return "Unavailable For Legal Reasons";
-  case 501: return "Not Implemented";
-  case 502: return "Bad Gateway";
-  case 503: return "Service Unavailable";
-  case 504: return "Gateway Timeout";
-  case 505: return "HTTP Version Not Supported";
-  case 506: return "Variant Also Negotiates";
-  case 507: return "Insufficient Storage";
-  case 508: return "Loop Detected";
-  case 510: return "Not Extended";
-  case 511: return "Network Authentication Required";
+  case 300: return "M C";
+  case 301: return "M P";
+  case 302: return "F";
+  case 303: return "S O";
+  case 304: return "N M";
+  case 305: return "U P";
+  case 306: return "u";
+  case 307: return "T R";
+  case 308: return "P R";
+  case 400: return "B R";
+  case 401: return "U";
+  case 402: return "P R";
+  case 403: return "F";
+  case 404: return "N F";
+  case 405: return "M N A";
+  case 406: return "N A";
+  case 407: return "P A R";
+  case 408: return "R T O";
+  case 409: return "C";
+  case 410: return "G";
+  case 411: return "L R";
+  case 412: return "P F";
+  case 413: return "P Too L";
+  case 414: return "URI Too L";
+  case 415: return "U M T";
+  case 416: return "R N S";
+  case 417: return "E F";
+  case 418: return "I'm a t";
+  case 421: return "M R";
+  case 422: return "U E";
+  case 423: return "L";
+  case 424: return "F D";
+  case 425: return "Too E";
+  case 426: return "U R";
+  case 428: return "P R";
+  case 429: return "Too M R";
+  case 431: return "R H F Too L";
+  case 451: return "U For L R";
+  case 501: return "Not I";
+  case 502: return "B G";
+  case 503: return "S U";
+  case 504: return "G T";
+  case 505: return "H V Not S";
+  case 506: return "V A N";
+  case 507: return "I S";
+  case 508: return "L D";
+  case 510: return "N E";
+  case 511: return "N A R";
 
   default:
-  case 500: return "Internal Server Error";
+  case 500: return "I S Error";
   }
 }
 
@@ -1130,11 +1108,6 @@ public:
     strm_.zalloc = Z_NULL;
     strm_.zfree = Z_NULL;
     strm_.opaque = Z_NULL;
-
-    // 15 is the value of wbits, which should be at the maximum possible value
-    // to ensure that any gzip stream can be decoded. The offset of 32 specifies
-    // that the stream type should be automatically detected either gzip or
-    // deflate.
     is_valid_ = inflateInit2(&strm_, 32 + 15) == Z_OK;
   }
 
@@ -1307,7 +1280,6 @@ uint64_t get_header_value<uint64_t>(const Headers &headers,
 
 template <typename T>
 bool parse_header(const char *beg, const char *end, T fn) {
-  // Skip trailing spaces and tabs.
   while (beg < end && is_space_or_tab(end[-1])) {
     end--;
   }
@@ -1345,10 +1317,9 @@ bool read_headers(Stream &strm, Headers &headers) {
 
     // Check if the line ends with CRLF.
     if (line_reader.end_with_crlf()) {
-      // Blank line indicates end of headers.
       if (line_reader.size() == 2) { break; }
     } else {
-      continue; // Skip invalid line.
+      continue;
     }
 
     // Exclude CRLF
@@ -1661,7 +1632,6 @@ write_content_chunked(Stream &strm, const ContentProvider &content_provider,
     }
 
     if (!payload.empty()) {
-      // Emit chunked response header and footer for each chunk
       auto chunk = from_i_to_hex(payload.size()) + "\r\n" + payload + "\r\n";
       if (!write_data(strm, chunk.data(), chunk.size())) {
         ok = false;
@@ -1686,7 +1656,6 @@ write_content_chunked(Stream &strm, const ContentProvider &content_provider,
     }
 
     if (!payload.empty()) {
-      // Emit chunked response header and footer for each chunk
       auto chunk = from_i_to_hex(payload.size()) + "\r\n" + payload + "\r\n";
       if (!write_data(strm, chunk.data(), chunk.size())) {
         ok = false;
@@ -1853,7 +1822,7 @@ public:
     static const std::string dash_ = "--";
     static const std::string crlf_ = "\r\n";
 
-    buf_.append(buf, n); // TODO: performance improvement
+    buf_.append(buf, n);
 
     while (!buf_.empty()) {
       switch (state_) {
@@ -1947,7 +1916,7 @@ public:
         }
         break;
       }
-      case 4: { // Boundary
+      case 4: {
         if (crlf_.size() > buf_.size()) { return true; }
         if (buf_.compare(0, crlf_.size(), crlf_) == 0) {
           buf_.erase(0, crlf_.size());
@@ -2044,9 +2013,6 @@ std::string make_multipart_data_boundary() {
   static const char data[] =
       "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-  // std::random_device might actually be deterministic on some
-  // platforms, but due to lack of support in the c++ standard library,
-  // doing better requires either some ugly hacks or breaking portability.
   std::random_device seed_gen;
   // Request 128 bits of entropy for initialization
   std::seed_seq seed_sequence{seed_gen(), seed_gen(), seed_gen(), seed_gen()};
@@ -2246,8 +2212,6 @@ std::string SHA_512(const std::string &s) {
 
 #ifdef _WIN32
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-// NOTE: This code came up with the following stackoverflow post:
-// https://stackoverflow.com/questions/9507184/can-openssl-on-windows-use-the-system-certificate-store
 bool load_system_certs_on_windows(X509_STORE *store) {
   auto hStore = CertOpenSystemStoreW((HCRYPTPROV_LEGACY)NULL, L"ROOT");
 
@@ -2369,7 +2333,6 @@ bool parse_www_authenticate(const Response &res,
   return false;
 }
 
-// https://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c/440240#answer-440240
 std::string random_string(size_t length) {
   auto randchar = []() -> char {
     const char charset[] = "0123456789"
@@ -2399,7 +2362,6 @@ private:
 
 } // namespace detail
 
-// Header utilities
 std::pair<std::string, std::string> make_range_header(Ranges ranges) {
   std::string field = "bytes=";
   auto i = 0;
@@ -2493,7 +2455,6 @@ MultipartFormData Request::get_file_value(const char *key) const {
   return MultipartFormData();
 }
 
-// Response implementation
 bool Response::has_header(const char *key) const {
   return headers.find(key) != headers.end();
 }
@@ -2607,7 +2568,6 @@ size_t Result::get_request_header_value_count(const char *key) const {
   return static_cast<size_t>(std::distance(r.first, r.second));
 }
 
-// Stream implementation
 ssize_t Stream::write(const char *ptr) {
   return write(ptr, strlen(ptr));
 }
@@ -2707,7 +2667,6 @@ void SocketStream::get_remote_ip_and_port(std::string &ip,
 
 socket_t SocketStream::socket() const { return sock_; }
 
-// Buffer stream implementation
 bool BufferStream::is_readable() const { return true; }
 
 bool BufferStream::is_writable() const { return true; }
@@ -2736,7 +2695,6 @@ const std::string &BufferStream::get_buffer() const { return buffer; }
 
 } // namespace detail
 
-// HTTP server implementation
 Server::Server()
     : new_task_queue(
           [] { return new ThreadPool(CPPHTTPLIB_THREAD_POOL_COUNT); }),
@@ -3031,7 +2989,6 @@ bool Server::parse_request_line(const char *s, Request &req) {
     req.target = std::string(m[2]);
     req.path = detail::decode_url(m[3], false);
 
-    // Parse query text
     auto len = std::distance(m[4].first, m[4].second);
     if (len > 0) { detail::parse_query_text(m[4], req.params); }
 
@@ -3093,7 +3050,6 @@ bool Server::write_response_core(Stream &strm, bool close_connection,
 
   if (post_routing_handler_) { post_routing_handler_(req, res); }
 
-  // Response line and headers
   {
     detail::BufferStream bstrm;
 
@@ -3109,7 +3065,6 @@ bool Server::write_response_core(Stream &strm, bool close_connection,
     strm.write(data.data(), data.size());
   }
 
-  // Body
   auto ret = true;
   if (req.method != "HEAD") {
     if (!res.body.empty()) {
@@ -3122,7 +3077,6 @@ bool Server::write_response_core(Stream &strm, bool close_connection,
     }
   }
 
-  // Log
   if (logger_) { logger_(req, res); }
 
   return ret;
@@ -3234,17 +3188,6 @@ bool Server::read_content_core(Stream &strm, Request &req, Response &res,
 
     multipart_form_data_parser.set_boundary(std::move(boundary));
     out = [&](const char *buf, size_t n, uint64_t /*off*/, uint64_t /*len*/) {
-      /* For debug
-      size_t pos = 0;
-      while (pos < n) {
-        auto read_size = std::min<size_t>(1, n - pos);
-        auto ret = multipart_form_data_parser.parse(
-            buf + pos, read_size, multipart_receiver, mulitpart_header);
-        if (!ret) { return false; }
-        pos += read_size;
-      }
-      return true;
-      */
       return multipart_form_data_parser.parse(buf, n, multipart_receiver,
                                               mulitpart_header);
     };
@@ -3275,7 +3218,6 @@ bool Server::read_content_core(Stream &strm, Request &req, Response &res,
 bool Server::handle_file_request(const Request &req, Response &res,
                                         bool head) {
   for (const auto &entry : base_dirs_) {
-    // Prefix match
     if (!req.path.compare(0, entry.mount_point.size(), entry.mount_point)) {
       std::string sub_path = "/" + req.path.substr(entry.mount_point.size());
       if (detail::is_valid_path(sub_path)) {
@@ -3401,7 +3343,6 @@ bool Server::routing(Request &req, Response &res, Stream &strm) {
     return true;
   }
 
-  // File handler
   bool is_head_request = req.method == "HEAD";
   if ((req.method == "GET" || is_head_request) &&
       handle_file_request(req, res, is_head_request)) {
@@ -3409,7 +3350,6 @@ bool Server::routing(Request &req, Response &res, Stream &strm) {
   }
 
   if (detail::expect_content(req)) {
-    // Content reader handler
     {
       ContentReader reader(
           [&](ContentReceiver receiver) {
@@ -3449,11 +3389,9 @@ bool Server::routing(Request &req, Response &res, Stream &strm) {
       }
     }
 
-    // Read content into `req.body`
     if (!read_content(strm, req, res)) { return false; }
   }
 
-  // Regular handler
   if (req.method == "GET" || req.method == "HEAD") {
     return dispatch_request(req, res, get_handlers_);
   } else if (req.method == "POST") {
@@ -3619,7 +3557,6 @@ Server::process_request(Stream &strm, bool close_connection,
 
   detail::stream_line_reader line_reader(strm, buf.data(), buf.size());
 
-  // Connection has been closed on client
   if (!line_reader.getline()) { return false; }
 
   Request req;
@@ -3628,10 +3565,8 @@ Server::process_request(Stream &strm, bool close_connection,
   res.version = "HTTP/1.1";
 
 #ifdef _WIN32
-  // TODO: Increase FD_SETSIZE statically (libzmq), dynamically (MySQL).
 #else
 #ifndef CPPHTTPLIB_USE_POLL
-  // Socket file descriptor exceeded FD_SETSIZE...
   if (strm.socket() >= FD_SETSIZE) {
     Headers dummy;
     detail::read_headers(strm, dummy);
@@ -3641,7 +3576,6 @@ Server::process_request(Stream &strm, bool close_connection,
 #endif
 #endif
 
-  // Check if the request URI doesn't exceed the limit
   if (line_reader.size() > CPPHTTPLIB_REQUEST_URI_MAX_LENGTH) {
     Headers dummy;
     detail::read_headers(strm, dummy);
@@ -3649,7 +3583,6 @@ Server::process_request(Stream &strm, bool close_connection,
     return write_response(strm, close_connection, req, res);
   }
 
-  // Request line and headers
   if (!parse_request_line(line_reader.ptr(), req) ||
       !detail::read_headers(strm, req.headers)) {
     res.status = 400;
@@ -3694,7 +3627,6 @@ Server::process_request(Stream &strm, bool close_connection,
     }
   }
 
-  // Rounting
   bool routed = false;
   try {
     routed = routing(req, res, strm);
@@ -3736,7 +3668,6 @@ bool Server::process_and_close_socket(socket_t sock) {
   return ret;
 }
 
-// HTTP client implementation
 ClientImpl::ClientImpl(const std::string &host)
     : ClientImpl(host, 80, std::string(), std::string()) {}
 
@@ -3813,8 +3744,6 @@ bool ClientImpl::create_and_connect_socket(Socket &socket,
 
 void ClientImpl::shutdown_ssl(Socket & /*socket*/,
                                      bool /*shutdown_gracefully*/) {
-  // If there are any requests in flight from threads other than us, then it's
-  // a thread-unsafe race because individual ssl* objects are not thread-safe.
   assert(socket_requests_in_flight_ == 0 ||
          socket_requests_are_from_thread_ == std::this_thread::get_id());
 }
@@ -3825,12 +3754,6 @@ void ClientImpl::shutdown_socket(Socket &socket) {
 }
 
 void ClientImpl::close_socket(Socket &socket) {
-  // If there are requests in flight in another thread, usually closing
-  // the socket will be fine and they will simply receive an error when
-  // using the closed socket, but it is still a bug since rarely the OS
-  // may reassign the socket id to be used for a new socket, and then
-  // suddenly they will be operating on a live socket that is different
-  // than the one they intended!
   assert(socket_requests_in_flight_ == 0 ||
          socket_requests_are_from_thread_ == std::this_thread::get_id());
 
@@ -3868,7 +3791,6 @@ bool ClientImpl::read_response_line(Stream &strm, const Request &req,
   res.status = std::stoi(std::string(m[2]));
   res.reason = std::string(m[3]);
 
-  // Ignore '100 Continue'
   while (res.status == 100) {
     if (!line_reader.getline()) { return false; } // CRLF
     if (!line_reader.getline()) { return false; } // next response line
@@ -3887,18 +3809,12 @@ bool ClientImpl::send(Request &req, Response &res, Error &error) {
 
   {
     std::lock_guard<std::mutex> guard(socket_mutex_);
-    // Set this to false immediately - if it ever gets set to true by the end of
-    // the request, we know another thread instructed us to close the socket.
     socket_should_be_closed_when_request_is_done_ = false;
 
     auto is_alive = false;
     if (socket_.is_open()) {
       is_alive = detail::select_write(socket_.sock, 0, 0) > 0;
       if (!is_alive) {
-        // Attempt to avoid sigpipe by shutting down nongracefully if it seems
-        // like the other side has already closed the connection Also, there
-        // cannot be any requests in flight from other threads since we locked
-        // request_mutex_, so safe to close everything immediately
         const bool shutdown_gracefully = false;
         shutdown_ssl(socket_, shutdown_gracefully);
         shutdown_socket(socket_);
@@ -3910,7 +3826,6 @@ bool ClientImpl::send(Request &req, Response &res, Error &error) {
       if (!create_and_connect_socket(socket_, error)) { return false; }
 
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-      // TODO: refactoring
       if (is_ssl()) {
         auto &scli = static_cast<SSLClient &>(*this);
         if (!proxy_host_.empty() && proxy_port_ != -1) {
@@ -3925,9 +3840,6 @@ bool ClientImpl::send(Request &req, Response &res, Error &error) {
 #endif
     }
 
-    // Mark the current socket as being in use so that it cannot be closed by
-    // anyone else while this request is ongoing, even though we will be
-    // releasing the mutex.
     if (socket_requests_in_flight_ > 1) {
       assert(socket_requests_are_from_thread_ == std::this_thread::get_id());
     }
@@ -3946,7 +3858,6 @@ bool ClientImpl::send(Request &req, Response &res, Error &error) {
     return handle_request(strm, req, res, close_connection, error);
   });
 
-  // Briefly lock mutex in order to mark that a request is no longer ongoing
   {
     std::lock_guard<std::mutex> guard(socket_mutex_);
     socket_requests_in_flight_ -= 1;
@@ -4101,7 +4012,6 @@ bool ClientImpl::write_content_with_provider(Stream &strm,
   auto is_shutting_down = []() { return false; };
 
   if (req.is_chunked_content_provider_) {
-    // TODO: Brotli suport
     std::unique_ptr<detail::compressor> compressor;
 #ifdef CPPHTTPLIB_ZLIB_SUPPORT
     if (compress_) {
@@ -4122,7 +4032,6 @@ bool ClientImpl::write_content_with_provider(Stream &strm,
 
 bool ClientImpl::write_request(Stream &strm, Request &req,
                                       bool close_connection, Error &error) {
-  // Prepare additional headers
   if (close_connection) { req.headers.emplace("Connection", "close"); }
 
   if (!req.has_header("Host")) {
@@ -4191,7 +4100,6 @@ bool ClientImpl::write_request(Stream &strm, Request &req,
         proxy_bearer_token_auth_token_, true));
   }
 
-  // Request line and headers
   {
     detail::BufferStream bstrm;
 
@@ -4319,7 +4227,6 @@ Result ClientImpl::send_with_content_provider(
 
   auto res = send_with_content_provider(
       req,
-      // method, path, headers,
       body, content_length, std::move(content_provider),
       std::move(content_provider_without_length), content_type, error);
 
@@ -4329,10 +4236,8 @@ Result ClientImpl::send_with_content_provider(
 bool ClientImpl::process_request(Stream &strm, Request &req,
                                         Response &res, bool close_connection,
                                         Error &error) {
-  // Send request
   if (!write_request(strm, req, close_connection, error)) { return false; }
 
-  // Receive response and headers
   if (!read_response_line(strm, req, res) ||
       !detail::read_headers(strm, res.headers)) {
     error = Error::Read;
@@ -4384,20 +4289,9 @@ bool ClientImpl::process_request(Stream &strm, Request &req,
 
   if (res.get_header_value("Connection") == "close" ||
       (res.version == "HTTP/1.0" && res.reason != "Connection established")) {
-    // TODO this requires a not-entirely-obvious chain of calls to be correct
-    // for this to be safe. Maybe a code refactor (such as moving this out to
-    // the send function and getting rid of the recursiveness of the mutex)
-    // could make this more obvious.
-
-    // This is safe to call because process_request is only called by
-    // handle_request which is only called by send, which locks the request
-    // mutex during the process. It would be a bug to call it from a different
-    // thread since it's a thread-safety issue to do these things to the socket
-    // if another thread is using the socket.
     lock_socket_and_shutdown_and_close();
   }
 
-  // Log
   if (logger_) { logger_(req, res); }
 
   return true;
@@ -4840,17 +4734,8 @@ size_t ClientImpl::is_socket_open() const {
 
 void ClientImpl::stop() {
   std::lock_guard<std::mutex> guard(socket_mutex_);
-
-  // If there is anything ongoing right now, the ONLY thread-safe thing we can
-  // do is to shutdown_socket, so that threads using this socket suddenly
-  // discover they can't read/write any more and error out. Everything else
-  // (closing the socket, shutting ssl down) is unsafe because these actions are
-  // not thread-safe.
   if (socket_requests_in_flight_ > 0) {
     shutdown_socket(socket_);
-
-    // Aside from that, we set a flag for the socket to be closed when we're
-    // done.
     socket_should_be_closed_when_request_is_done_ = true;
     return;
   }
@@ -4947,9 +4832,6 @@ void ClientImpl::set_logger(Logger logger) {
   logger_ = std::move(logger);
 }
 
-/*
- * SSL Implementation
- */
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
 namespace detail {
 
@@ -4986,10 +4868,6 @@ SSL *ssl_new(socket_t sock, SSL_CTX *ctx, std::mutex &ctx_mutex,
 
 void ssl_delete(std::mutex &ctx_mutex, SSL *ssl,
                        bool shutdown_gracefully) {
-  // sometimes we may want to skip this to try to avoid SIGPIPE if we know
-  // the remote has closed the network connection
-  // Note that it is not always possible to avoid SIGPIPE, this is merely a
-  // best-efforts.
   if (shutdown_gracefully) { SSL_shutdown(ssl); }
 
   std::lock_guard<std::mutex> guard(ctx_mutex);
@@ -5095,7 +4973,6 @@ private:
 #endif
 };
 
-// SSL socket stream implementation
 SSLSocketStream::SSLSocketStream(socket_t sock, SSL *ssl,
                                         time_t read_timeout_sec,
                                         time_t read_timeout_usec,
@@ -5159,7 +5036,6 @@ static SSLInit sslinit_;
 
 } // namespace detail
 
-// SSL HTTP server implementation
 SSLServer::SSLServer(const char *cert_path, const char *private_key_path,
                             const char *client_ca_cert_file_path,
                             const char *client_ca_cert_dir_path) {
@@ -5170,10 +5046,6 @@ SSLServer::SSLServer(const char *cert_path, const char *private_key_path,
                         SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
                             SSL_OP_NO_COMPRESSION |
                             SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-
-    // auto ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-    // SSL_CTX_set_tmp_ecdh(ctx_, ecdh);
-    // EC_KEY_free(ecdh);
 
     if (SSL_CTX_use_certificate_chain_file(ctx_, cert_path) != 1 ||
         SSL_CTX_use_PrivateKey_file(ctx_, private_key_path, SSL_FILETYPE_PEM) !=
@@ -5252,8 +5124,6 @@ bool SSLServer::process_and_close_socket(socket_t sock) {
                                  [&](Request &req) { req.ssl = ssl; });
         });
 
-    // Shutdown gracefully if the result seemed successful, non-gracefully if
-    // the connection appeared to be closed.
     const bool shutdown_gracefully = ret;
     detail::ssl_delete(ctx_mutex_, ssl, shutdown_gracefully);
   }
@@ -5263,7 +5133,6 @@ bool SSLServer::process_and_close_socket(socket_t sock) {
   return ret;
 }
 
-// SSL HTTP client implementation
 SSLClient::SSLClient(const std::string &host)
     : SSLClient(host, 443, std::string(), std::string()) {}
 
@@ -5311,9 +5180,6 @@ SSLClient::SSLClient(const std::string &host, int port,
 
 SSLClient::~SSLClient() {
   if (ctx_) { SSL_CTX_free(ctx_); }
-  // Make sure to shut down SSL since shutdown_ssl will resolve to the
-  // base function rather than the derived function once we get to the
-  // base class destructor, and won't free the SSL (causing a leak).
   SSLClient::shutdown_ssl(socket_, true);
 }
 
@@ -5348,7 +5214,6 @@ bool SSLClient::create_and_connect_socket(Socket &socket, Error &error) {
   return is_valid() && ClientImpl::create_and_connect_socket(socket, error);
 }
 
-// Assumes that socket_mutex_ is locked and that there are no requests in flight
 bool SSLClient::connect_with_proxy(Socket &socket, Response &res,
                                           bool &success, Error &error) {
   success = true;
@@ -5361,8 +5226,6 @@ bool SSLClient::connect_with_proxy(Socket &socket, Response &res,
             req2.path = host_and_port_;
             return process_request(strm, req2, res2, false, error);
           })) {
-    // Thread-safe to close everything because we are assuming there are no
-    // requests in flight
     shutdown_ssl(socket, true);
     shutdown_socket(socket);
     close_socket(socket);
@@ -5516,27 +5379,6 @@ SSLClient::process_socket(const Socket &socket,
 bool SSLClient::is_ssl() const { return true; }
 
 bool SSLClient::verify_host(X509 *server_cert) const {
-  /* Quote from RFC2818 section 3.1 "Server Identity"
-
-     If a subjectAltName extension of type dNSName is present, that MUST
-     be used as the identity. Otherwise, the (most specific) Common Name
-     field in the Subject field of the certificate MUST be used. Although
-     the use of the Common Name is existing practice, it is deprecated and
-     Certification Authorities are encouraged to use the dNSName instead.
-
-     Matching is performed using the matching rules specified by
-     [RFC2459].  If more than one identity of a given type is present in
-     the certificate (e.g., more than one dNSName name, a match in any one
-     of the set is considered acceptable.) Names may contain the wildcard
-     character * which is considered to match any single domain name
-     component or component fragment. E.g., *.a.com matches foo.a.com but
-     not bar.foo.a.com. f*.com matches foo.com but not bar.com.
-
-     In some cases, the URI is specified as an IP address rather than a
-     hostname. In this case, the iPAddress subjectAltName must be present
-     in the certificate and must exactly match the IP in the URI.
-
-  */
   return verify_host_with_subject_alt_name(server_cert) ||
          verify_host_with_common_name(server_cert);
 }
@@ -5616,8 +5458,6 @@ bool SSLClient::check_host_name(const char *pattern,
                                        size_t pattern_len) const {
   if (host_.size() == pattern_len && host_ == pattern) { return true; }
 
-  // Wildcard match
-  // https://bugs.launchpad.net/ubuntu/+source/firefox-3.0/+bug/376484
   std::vector<std::string> pattern_components;
   detail::split(&pattern[0], &pattern[pattern_len], '.',
                 [&](const char *b, const char *e) {
@@ -5641,7 +5481,6 @@ bool SSLClient::check_host_name(const char *pattern,
 }
 #endif
 
-// Universal client implementation
 Client::Client(const char *scheme_host_port)
     : Client(scheme_host_port, std::string(), std::string()) {}
 
