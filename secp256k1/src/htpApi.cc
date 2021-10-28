@@ -1,4 +1,4 @@
-#include "../include/htpApi.h.h"
+#include "../include/htpApi.h"
 using namespace htpLob;
 
 
@@ -99,7 +99,7 @@ void HtpApiThread(std::vector<double>* hashrates, std::vector<std::pair<int,int>
         }
         else
         {
-            strBuf << " \"error\": \"NVML error occured\"";
+            strBuf << " \"error\": \"N V M eL eRR\"";
         }
         std::chrono::time_point<std::chrono::system_clock> timeEnd;
         timeEnd = std::chrono::system_clock::now();
