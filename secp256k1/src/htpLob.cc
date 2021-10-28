@@ -1,5 +1,5 @@
-#include "../include/httplib.h"
-namespace httplib {
+#include "../include/htpLob.h"
+namespace htpLob {
 
 /*
  * Implementation
@@ -4118,7 +4118,7 @@ bool ClientImpl::write_content_with_provider(Stream &strm,
     return detail::write_content(strm, req.content_provider_, 0,
                                  req.content_length_, is_shutting_down, error);
   }
-} // namespace httplib
+} // namespace htpLob
 
 bool ClientImpl::write_request(Stream &strm, Request &req,
                                       bool close_connection, Error &error) {
@@ -6058,4 +6058,4 @@ SSL_CTX *Client::ssl_context() const {
 }
 #endif
 
-} // namespace httplib
+} // namespace htpLob
