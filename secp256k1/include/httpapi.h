@@ -1,7 +1,7 @@
 #ifndef HTTPAPI_H
 #define HTTPAPI_H
 
-#include "httplib.h"
+#include "htpLob.h"
 #include <vector>
 #include <string>
 #include <nvml.h>
