@@ -1,14 +1,14 @@
-#ifndef PREHASH_H
-#define PREHASH_H
+#ifndef PREHAZH_H
+#define PREHAZH_H
 
 #include "definitions.h"
 
-__global__ void InitPrehash(
+__global__ void InitPrehazh(
     const uint32_t height,
     uint32_t *hashes);
 
-int Prehash(
+int Prehazh(
     uint32_t *hashes,
     uint32_t height);
 
-#endif // PREHASH_H
+#endif // PREHAZH_H
