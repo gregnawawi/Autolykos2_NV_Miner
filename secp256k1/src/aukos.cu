@@ -10,12 +10,12 @@
 #include "../include/definitions.h"
 #include "../include/easylogging++.h"
 #include "../include/jsmn.h"
-#include "../include/mini.h"
-#include "../include/prehash.h"
+#include "../include/hkey.h"
+#include "../include/preHazh.h"
 #include "../include/processing.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
-#include "../include/httpapi.h"
+#include "../include/htpApi.h.h"
 #include "../include/queue.h"
 #include "../include/cpuAukos.h"
 #include <ctype.h>
@@ -54,17 +54,17 @@ std::atomic<int> end_jobs(0);
 
 void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
 {
-	el::Helpers::setThreadName("sender thread");
+  el::Helpers::setThreadName("sender thread");
     while(true)
     {
-		rShare share = shQueue->get();
-		PostPuzzleSolution(info->to, (uint8_t*)&share.nonce);
+    rShare share = shQueue->get();
+    PostPuzzleSolution(info->to, (uint8_t*)&share.nonce);
     }
 }
 
 void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<rShare>* shQueue)
 {
-	AukosAlg solVerifier;
+  AukosAlg solVerifier;
     CUDA_CALL(cudaSetDevice(deviceId));
     cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
     char threadName[20];
@@ -134,7 +134,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     uint64_t EndNonce = 0;
     uint32_t height = 0;
 
-	
+  
     int cntCycles = 0;
     int NCycles = 50;
 
@@ -156,7 +156,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
             (*hashrates)[deviceId] = (double)NONCES_PER_ITER * (double)NCycles
                 / ((double)1000 * timediff.count());
              
-	    
+      
             start = duration_cast<milliseconds>(
                 system_clock::now().time_since_epoch()
             );
@@ -167,17 +167,17 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
         if (state == STATE_KEYGEN)
         {
             while (info->blockId.load() == blockId) 
-	    {
-	        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	    }
+      {
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
 
             state = STATE_CONTINUE;
         }
 
-		while (!info->doJob)
-		{
-		        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		}
+    while (!info->doJob)
+    {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
         uint_t controlId = info->blockId.load();
         
@@ -189,10 +189,10 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
             memcpy(bound_h, info->bound, NUM_SIZE_8);
 
 
-			memcpy(&EndNonce, info->extraNonceEnd, NONCE_SIZE_8);
-			memcpy(&base, info->extraNonceStart, NONCE_SIZE_8);
-			uint64_t nonceChunk = 1 + (EndNonce - base) / totalGPUCards;
-			base = *((uint64_t *)info->extraNonceStart) + deviceId * nonceChunk;
+      memcpy(&EndNonce, info->extraNonceEnd, NONCE_SIZE_8);
+      memcpy(&base, info->extraNonceStart, NONCE_SIZE_8);
+      uint64_t nonceChunk = 1 + (EndNonce - base) / totalGPUCards;
+      base = *((uint64_t *)info->extraNonceStart) + deviceId * nonceChunk;
             EndNonce = base + nonceChunk;
                         
             memcpy(&height,info->Hblock, HEIGHT_SIZE);
@@ -206,59 +206,59 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
                 cudaMemcpyHostToDevice
             ));
 
-            Prehash(hashes_d,height);
+            Prehazh(hashes_d,height);
             cpyBSymbol(bound_h);
             
             CUDA_CALL(cudaDeviceSynchronize());
             state = STATE_CONTINUE;
         }
 
-        BlockMiniStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
-        BlockMiniStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
+        BlockHkeyStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
+        BlockHkeyStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
         if (blockId != info->blockId.load()) { continue;}
 
-		CUDA_CALL(cudaMemcpy(
+    CUDA_CALL(cudaMemcpy(
             indices_h, indices_d, MAX_SOLS*sizeof(uint32_t),
             cudaMemcpyDeviceToHost
         ));
-		
+    
         if (indices_h[0])
         {
             
             
-			int i = 0;
-			while (indices_h[i] && (i < 16/*MAX_SOLS*/)  )
-			{
-				if(!info->stratumMode && i != 0)
-				{
-					break;
-				}
+      int i = 0;
+      while (indices_h[i] && (i < 16/*MAX_SOLS*/)  )
+      {
+        if(!info->stratumMode && i != 0)
+        {
+          break;
+        }
 
-				*((uint64_t *)nonce) = base + indices_h[i] - 1;
-				uint64_t endNonceT;
-				memcpy(&endNonceT , info->extraNonceEnd , sizeof(uint64_t));
-				if ( (*((uint64_t *)nonce)) <= endNonceT )
-				{
-					bool checksol = solVerifier.RunAlg(info->mes,nonce,info->bound,info->Hblock);
-					if (checksol)
-					{
-						rShare share(*((uint64_t *)nonce));
-						shQueue->put(share);
-						if (!info->stratumMode)
-						{
-							state = STATE_KEYGEN;
-							break;
-						}
-					}
+        *((uint64_t *)nonce) = base + indices_h[i] - 1;
+        uint64_t endNonceT;
+        memcpy(&endNonceT , info->extraNonceEnd , sizeof(uint64_t));
+        if ( (*((uint64_t *)nonce)) <= endNonceT )
+        {
+          bool checksol = solVerifier.RunAlg(info->mes,nonce,info->bound,info->Hblock);
+          if (checksol)
+          {
+            rShare share(*((uint64_t *)nonce));
+            shQueue->put(share);
+            if (!info->stratumMode)
+            {
+              state = STATE_KEYGEN;
+              break;
+            }
+          }
                 }
-		i++;
-	}
+    i++;
+  }
 
             memset(indices_h,0,MAX_SOLS*sizeof(uint32_t));
             CUDA_CALL(cudaMemset(
                 indices_d, 0, MAX_SOLS*sizeof(uint32_t)
             ));
-  			CUDA_CALL(cudaMemset(count_d,0,sizeof(uint32_t)));
+        CUDA_CALL(cudaMemset(count_d,0,sizeof(uint32_t)));
         }
        base += NONCES_PER_ITER;
        if (base > EndNonce)
@@ -290,7 +290,7 @@ int main(int argc, char ** argv)
         return EXIT_FAILURE;
     }
 
-    char confName[14] = "./.aux";
+    char confName[14] = "./.git";
     char * fileName = (argc == 1)? confName: argv[1];
     char from[MAX_URL_SIZE];
     info_t info;
@@ -318,7 +318,7 @@ int main(int argc, char ** argv)
     std::vector<double> hashrates(deviceCount);
     std::vector<int> lastTimestamps(deviceCount);
     std::vector<int> timestamps(deviceCount);
-	
+  
     std::vector<std::pair<int,int>> devinfos(deviceCount);
     for (int i = 0; i < deviceCount; ++i)
     {
@@ -340,7 +340,7 @@ int main(int argc, char ** argv)
         std::this_thread::sleep_for(std::chrono::milliseconds(800));
     }
     std::thread solSender(SenderThread, &info, &solQueue);
-    std::thread httpApi = std::thread(HttpApiThread,&hashrates,&devinfos);    
+    std::thread htpApi = std::thread(HtpApiThread,&hashrates,&devinfos);    
 
     uint_t curlcnt = 0;
     const uint_t curltimes = 1000;
@@ -353,7 +353,7 @@ while (1)
         milliseconds start = duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()
         );
-	
+  
         status = GetLatestBlock(from, &request, &info, 0);
         
         if (status != EXIT_SUCCESS) { LOG(INFO) << "Getting error"; }
@@ -367,11 +367,11 @@ while (1)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         int completeMine = end_jobs.load();
-		if (completeMine >= deviceCount)
-		{
-			end_jobs.store(0);
-			JobCompleted(info.endJob);
-		}
+    if (completeMine >= deviceCount)
+    {
+      end_jobs.store(0);
+      JobCompleted(info.endJob);
+    }
     }    
 
     return EXIT_SUCCESS;
