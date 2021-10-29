@@ -1,6 +1,6 @@
 // processing.cc
 
-#include "../include/easylogging++.h"
+#include "../include/easylogging.h"
 #include "../include/conversion.h"
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
