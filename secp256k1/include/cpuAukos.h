@@ -1,7 +1,7 @@
 #pragma once
 
 #include "definitions.h"
-#include "easylogging++.h"
+#include "easylogging.h"
 
 #include <curl/curl.h>
 #include <inttypes.h>
