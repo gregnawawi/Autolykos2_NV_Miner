@@ -8,7 +8,7 @@
 
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
-#include "../include/easylogging++.h"
+#include "../include/easylogging.h"
 #include "../include/jsmn.h"
 #include "../include/hkey.h"
 #include "../include/preHazh.h"
