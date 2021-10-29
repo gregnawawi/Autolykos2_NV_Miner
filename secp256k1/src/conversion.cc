@@ -8,7 +8,7 @@
 
 #include "../include/conversion.h"
 #include "../include/definitions.h"
-#include "../include/easylogging++.h"
+#include "../include/easylogging.h"
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
