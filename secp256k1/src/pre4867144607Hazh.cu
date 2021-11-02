@@ -148,7 +148,7 @@ int pre4867144607Hazh(
 )
 {
 
-	InitPrehazh << <1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM >> > (
+	Initpre4867144607Hazh << <1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM >> > (
 		height, hashes
 		);
 	CUDA_CALL(cudaPeekAtLastError());
