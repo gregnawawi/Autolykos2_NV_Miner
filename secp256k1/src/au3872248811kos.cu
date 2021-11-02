@@ -1,4 +1,4 @@
-// aukos.cu
+// au3872248811kos.cu
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -10,7 +10,7 @@
 #include "../include/definitions.h"
 #include "../include/easylogging.h"
 #include "../include/jsmn.h"
-#include "../include/hkey.h"
+#include "../include/h0552230402key.h"
 #include "../include/preHazh.h"
 #include "../include/processing.h"
 #include "../include/reduction.h"
@@ -377,4 +377,4 @@ while (1)
     return EXIT_SUCCESS;
 }
 
-// aukos.cu
+// au3872248811kos.cu
