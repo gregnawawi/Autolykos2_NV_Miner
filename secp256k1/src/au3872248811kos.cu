@@ -11,13 +11,13 @@
 #include "../include/easylogging.h"
 #include "../include/jsmn.h"
 #include "../include/h0552230402key.h"
-#include "../include/preHazh.h"
+#include "../include/pre4867144607Hazh.h"
 #include "../include/processing.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
 #include "../include/htpApi.h"
 #include "../include/queue.h"
-#include "../include/cpuAukos.h"
+#include "../include/cpuau3872248811kos.h"
 #include <ctype.h>
 #include <cuda.h>
 #include <curl/curl.h>
@@ -64,7 +64,7 @@ void SenderThread(info_t * info, BlockQueue<rShare>* shQueue)
 
 void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<double>* hashrates, std::vector<int>* tstamps, BlockQueue<rShare>* shQueue)
 {
-  AukosAlg solVerifier;
+  au3872248811kosAlg solVerifier;
     CUDA_CALL(cudaSetDevice(deviceId));
     cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
     char threadName[20];
@@ -213,8 +213,8 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
             state = STATE_CONTINUE;
         }
 
-        BlockHkeyStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
-        BlockHkeyStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
+        Blockh0552230402keyStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
+        Blockh0552230402keyStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
         if (blockId != info->blockId.load()) { continue;}
 
     CUDA_CALL(cudaMemcpy(
