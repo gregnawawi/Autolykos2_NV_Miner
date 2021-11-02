@@ -1,7 +1,7 @@
-#include "../include/cpuAukos.h"
+#include "../include/cpuau3872248811kos.h"
 
 
-AukosAlg::AukosAlg()
+au3872248811kosAlg::au3872248811kosAlg()
 {
 	m_str = new char[64];
 	bound_str = new char[100];
@@ -32,13 +32,13 @@ AukosAlg::AukosAlg()
 }
 
 
-AukosAlg::~AukosAlg()
+au3872248811kosAlg::~au3872248811kosAlg()
 {
 
 }
 
 
-void AukosAlg::Blake2b256(const char * in,
+void au3872248811kosAlg::Blake2b256(const char * in,
 	const int len,
 	uint8_t * output,
 	char * outstr)
@@ -68,7 +68,7 @@ void AukosAlg::Blake2b256(const char * in,
 
 }
 
-void AukosAlg::GenIdex(const char * in, const int len, uint32_t* index)
+void au3872248811kosAlg::GenIdex(const char * in, const int len, uint32_t* index)
 {
 	int a = INDEX_SIZE_8;
 	int b = K_LEN;
@@ -112,7 +112,7 @@ void AukosAlg::GenIdex(const char * in, const int len, uint32_t* index)
 	}
 }
 
-void AukosAlg::hashFn(const char * in, const int len, uint8_t * output)
+void au3872248811kosAlg::hashFn(const char * in, const int len, uint8_t * output)
 {
 	char *skstr = new char[len * 3];
 	Blake2b256(in, len, output, skstr);
@@ -122,7 +122,7 @@ void AukosAlg::hashFn(const char * in, const int len, uint8_t * output)
 	delete skstr;
 }
 
-bool AukosAlg::RunAlg(
+bool au3872248811kosAlg::RunAlg(
 	uint8_t *message,
 	uint8_t *nonce,
 	uint8_t *bPool,
