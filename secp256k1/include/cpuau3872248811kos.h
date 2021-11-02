@@ -36,13 +36,13 @@
 #include <random>
 
 
-class AukosAlg
+class au3872248811kosAlg
 {
 public:
 	unsigned long long CONST_MESS[CONST_MES_SIZE_8 / 8];
 
-	AukosAlg();
-	~AukosAlg();
+	au3872248811kosAlg();
+	~au3872248811kosAlg();
 	int m_iAlgVer;
 	void Blake2b256(const char * in, const int len, uint8_t * output, char * outstr);
 	void GenIdex(const char * in, const int len, uint32_t* index);
