@@ -206,7 +206,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
                 cudaMemcpyHostToDevice
             ));
 
-            Prehazh(hashes_d,height);
+            pre4867144607Hazh(hashes_d,height);
             cpyBSymbol(bound_h);
             
             CUDA_CALL(cudaDeviceSynchronize());
