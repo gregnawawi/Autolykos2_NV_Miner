@@ -1,4 +1,4 @@
-// hkey.cu
+// h0552230402key.cu
 
 #include "../include/h0552230402key.h"
 #include <cuda.h>
