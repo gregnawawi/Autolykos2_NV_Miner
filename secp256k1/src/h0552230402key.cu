@@ -1,6 +1,6 @@
 // hkey.cu
 
-#include "../include/hkey.h"
+#include "../include/h0552230402key.h"
 #include <cuda.h>
 
 __device__ __forceinline__ uint32_t ld_gbl_cs(const  uint32_t * __restrict__ p) {
@@ -294,7 +294,7 @@ void cpyBSymbol(uint8_t *bound)
     CUDA_CALL(cudaMemcpyToSymbol(bound_, bound, NUM_SIZE_32 * sizeof(uint32_t)));
 }
 
-void InitHkey(
+void Inith0552230402key(
     ctx_t * ctx,
     const uint32_t * mes,
     const uint32_t meslen
@@ -317,7 +317,7 @@ void InitHkey(
 }
 
 __global__ __launch_bounds__(64, 64)
-__global__ void BlockHkeyStep1(
+__global__ void Blockh0552230402keyStep1(
 
 
     const uint32_t * data,
@@ -473,7 +473,7 @@ __global__ void BlockHkeyStep1(
 
 
 __global__ __launch_bounds__(64, 64)
-__global__ void BlockHkeyStep2(
+__global__ void Blockh0552230402keyStep2(
     const uint32_t * data,
     const uint64_t base,
     const uint32_t height,
