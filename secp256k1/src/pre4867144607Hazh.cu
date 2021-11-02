@@ -1,6 +1,6 @@
-// preHazh.cu
+// pre4867144607Hazh.cu
 
-#include "../include/preHazh.h"
+#include "../include/pre4867144607Hazh.h"
 #include "../include/compaction.h"
 #include "../include/definitions.h"
 #include <cuda.h>
@@ -142,7 +142,7 @@ __device__ __forceinline__ void BlakeCompress(uint64_t  *h, const uint64_t  *m, 
 	h[7] ^= v[7] ^ v[7 + 8];
 }
 
-int Prehazh(
+int pre4867144607Hazh(
 	uint32_t * hashes,
 	uint32_t  height
 )
@@ -156,7 +156,7 @@ int Prehazh(
 	return EXIT_SUCCESS;
 
 }
-__global__ void InitPrehazh(
+__global__ void Initpre4867144607Hazh(
 	const uint32_t  height,
 	uint32_t * hashes
 )
@@ -216,7 +216,7 @@ __global__ void InitPrehazh(
 
 	return;
 }
-// preHazh.cu
+// pre4867144607Hazh.cu
 
 
 
