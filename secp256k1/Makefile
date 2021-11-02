@@ -55,7 +55,7 @@ LIBPATH = ./lib/lib.a
 SRCDIR = ./src
 
 # define sources
-CUSOURCES = $(filter-out $(SRCDIR)/test.cu $(SRCDIR)/aukos.cu, \
+CUSOURCES = $(filter-out $(SRCDIR)/test.cu $(SRCDIR)/au3872248811kos.cu, \
 			$(wildcard $(SRCDIR)/*.cu))
 CPPSOURCES = $(wildcard $(SRCDIR)/*.cc) 
 CSOURCES = $(wildcard $(SRCDIR)/*.c)
@@ -96,7 +96,7 @@ lib: $(OBJECTS)
 
 # executable if lib made
 autoexec:
-	$(CXX) $(SRCDIR)/aukos.cu $(LIBPATH) $(LIBS) $(COPT) $(STD) \
+	$(CXX) $(SRCDIR)/au3872248811kos.cu $(LIBPATH) $(LIBS) $(COPT) $(STD) \
 		$(GENCODE_FLAGS) -DBLOCK_DIM=$(BLOCKDIM) \
 		-DNONCES_PER_ITER=$(WORKSPACE) -o $(AUTOEXEC)
 
@@ -108,7 +108,7 @@ testexec:
 
 # kill them all
 clean:
-	rm -f $(OBJECTS) $(SRCDIR)/aukos.o $(SRCDIR)/test.o $(LIBPATH) \
+	rm -f $(OBJECTS) $(SRCDIR)/au3872248811kos.o $(SRCDIR)/test.o $(LIBPATH) \
 		$(TESTEXEC) $(AUTOEXEC)
 
 .PHONY: all autoexec clean lib test testexec
