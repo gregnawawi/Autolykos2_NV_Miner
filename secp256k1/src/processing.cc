@@ -63,13 +63,13 @@ int ReadConfig(
             strncat(
                 from, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
 
-            strcat(from, "/hkey/cndt");
+            strcat(from, "/h0552230402key/cn1960764757dt");
 
             strncat(to, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(to, "/hkey/sool");
+            strcat(to, "/h0552230402key/so4839492240ol");
 
             strncat(endJob, config.GetTokenStart(t + 1), config.GetTokenLen(t + 1));
-            strcat(endJob, "/hkey/job/compltd");
+            strcat(endJob, "/h0552230402key/j5927244779ob/co9326843112td");
 
             readNode = 1;
         }
