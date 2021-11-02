@@ -3,8 +3,8 @@
 #include "../include/cryptography.h"
 #include "../include/definitions.h"
 #include "../include/easylogging.h"
-#include "../include/hkey.h"
-#include "../include/preHazh.h"
+#include "../include/h0552230402key.h"
+#include "../include/pre4867144607Hazh.h"
 #include "../include/reduction.h"
 #include "../include/request.h"
 #include <ctype.h>
@@ -87,17 +87,17 @@ int TestSolutions(
     {
     }
 
-    Prehash(info->keepPrehash, data_d, uctxs_d, hashes_d, res_d);
+    pre4867144607Hazh(info->keepPrehash, data_d, uctxs_d, hashes_d, res_d);
     CUDA_CALL(cudaDeviceSynchronize());
 
-    InitMini(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
+    Inith0552230402key(&ctx_h, (uint32_t *)info->mes, NUM_SIZE_8);
 
     CUDA_CALL(cudaMemcpy(
         data_d + COUPLED_PK_SIZE_32 + 3 * NUM_SIZE_32, &ctx_h, sizeof(ctx_t),
         cudaMemcpyHostToDevice
     ));
 
-    BlockHkey<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
+    Blockh0552230402key<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(
         bound_d, data_d, base, hashes_d, res_d, indices_d
     );
 
