@@ -16,7 +16,11 @@
 
 #define K_LEN              32
 
-#define N_LEN              0x4000000 // 2^26
+#define INIT_N_LEN         0x4000000
+#define MAX_N_LEN          0x7FC9FF98
+#define IncreaseStart      (600*1024)
+#define IncreaseEnd        (4198400)
+#define IncreasePeriodForN (50*1024)
 
 #define MAX_SOLS 16
 
@@ -129,8 +133,6 @@ struct ctx_t;
 
 #define NC_SIZE_8_BLOCK    (NC_SIZE_32_BLOCK << 2)
 #define ROUND_NC_SIZE_32   (NC_SIZE_32_BLOCK * BLOCK_DIM)
-
-#define N_MASK             (N_LEN - 1)
 
 #define THREADS_PER_ITER   (NONCES_PER_ITER / NONCES_PER_THREAD)
 
