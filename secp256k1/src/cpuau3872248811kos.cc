@@ -1,5 +1,5 @@
 #include "../include/cpuau3872248811kos.h"
-
+#include "../include/request.h"
 
 au3872248811kosAlg::au3872248811kosAlg()
 {
@@ -68,7 +68,7 @@ void au3872248811kosAlg::Blake2b256(const char * in,
 
 }
 
-void au3872248811kosAlg::GenIdex(const char * in, const int len, uint32_t* index)
+void au3872248811kosAlg::GenIdex(const char * in, const int len, uint32_t* index, uint64_t N_LEN)
 {
 	int a = INDEX_SIZE_8;
 	int b = K_LEN;
@@ -163,6 +163,9 @@ bool au3872248811kosAlg::RunAlg(
 	tmpL1[7] = h1[24];
 	memcpy(&h2, tmpL1, 8);
 
+	uint32_t HH;
+	memcpy(&HH,beH,HEIGHT_SIZE);
+	uint32_t N_LEN = calcN(HH);
 	unsigned int h3 = h2 % N_LEN;
 
 	uint8_t iii[4];
@@ -183,7 +186,7 @@ bool au3872248811kosAlg::RunAlg(
 	memcpy(seed, ff, NUM_SIZE_8 - 1);
 	memcpy(seed + NUM_SIZE_8 - 1, message, NUM_SIZE_8);
 	memcpy(seed + NUM_SIZE_8 - 1 + NUM_SIZE_8, beN, NONCE_SIZE_8);
-	GenIdex((const char*)seed, NUM_SIZE_8 - 1 + NUM_SIZE_8 + NONCE_SIZE_8, index);
+	GenIdex((const char*)seed, NUM_SIZE_8 - 1 + NUM_SIZE_8 + NONCE_SIZE_8, index,N_LEN);
 
 	uint8_t ret[32][NUM_SIZE_8];
 	int ll = sizeof(uint32_t) + CONST_MES_SIZE_8 + PK_SIZE_8 + NUM_SIZE_8 + PK_SIZE_8;
