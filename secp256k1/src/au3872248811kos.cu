@@ -111,6 +111,7 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     uint32_t* BHashes;
     CUDA_CALL(cudaMalloc(&BHashes, (NUM_SIZE_8)*THREADS_PER_ITER) );
 
+    uint64_t N_LEN = INIT_N_LEN;
     uint32_t * hashes_d; 
     CUDA_CALL(cudaMalloc(&hashes_d, (uint32_t)N_LEN * NUM_SIZE_8) );
 
@@ -141,7 +142,8 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
     while (info->blockId.load() == 0) {}
 
     start = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-
+    uint32_t oldN = INIT_N_LEN;
+  
     do
     {
         ++cntCycles;
@@ -189,13 +191,27 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
             memcpy(bound_h, info->bound, NUM_SIZE_8);
 
 
-      memcpy(&EndNonce, info->extraNonceEnd, NONCE_SIZE_8);
-      memcpy(&base, info->extraNonceStart, NONCE_SIZE_8);
-      uint64_t nonceChunk = 1 + (EndNonce - base) / totalGPUCards;
-      base = *((uint64_t *)info->extraNonceStart) + deviceId * nonceChunk;
+            memcpy(&EndNonce, info->extraNonceEnd, NONCE_SIZE_8);
+            memcpy(&base, info->extraNonceStart, NONCE_SIZE_8);
+            uint64_t nonceChunk = 1 + (EndNonce - base) / totalGPUCards;
+            base = *((uint64_t *)info->extraNonceStart) + deviceId * nonceChunk;
+
             EndNonce = base + nonceChunk;
-                        
+
             memcpy(&height,info->Hblock, HEIGHT_SIZE);
+          
+            N_LEN = calcN(height);
+            if (oldN != N_LEN)
+            {
+              CUDA_CALL(cudaFree(hashes_d));
+              CUDA_CALL(cudaMalloc(&hashes_d, (uint32_t)N_LEN * NUM_SIZE_8) );
+              if (hashes_d == NULL)
+              {
+                LOG(INFO) << "GPU " << deviceId << "error in  allocating hashes_d";
+                  return;
+              }
+              oldN = N_LEN;
+            }
 
             info->info_mutex.unlock();
 
@@ -206,15 +222,15 @@ void rThread(const int totalGPUCards, int deviceId, info_t * info, std::vector<d
                 cudaMemcpyHostToDevice
             ));
 
-            pre4867144607Hazh(hashes_d,height);
+            pre4867144607Hazh(N_LEN,hashes_d,height);
             cpyBSymbol(bound_h);
             
             CUDA_CALL(cudaDeviceSynchronize());
             state = STATE_CONTINUE;
         }
 
-        Blockh0552230402keyStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(data_d, base, hashes_d, BHashes);
-        Blockh0552230402keyStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(data_d, base,height, hashes_d, indices_d , count_d,BHashes);
+        Blockh0552230402keyStep1<<<1 + (THREADS_PER_ITER - 1) / (BLOCK_DIM*4), BLOCK_DIM>>>(N_LEN,data_d, base, hashes_d, BHashes);
+        Blockh0552230402keyStep2<<<1 + (THREADS_PER_ITER - 1) / BLOCK_DIM, BLOCK_DIM>>>(N_LEN,data_d, base,height, hashes_d, indices_d , count_d,BHashes);
         if (blockId != info->blockId.load()) { continue;}
 
     CUDA_CALL(cudaMemcpy(
