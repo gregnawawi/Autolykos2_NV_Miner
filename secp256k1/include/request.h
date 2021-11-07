@@ -7,6 +7,8 @@
 #include <atomic>
 #include <mutex>
 
+uint32_t calcN(uint32_t Hblock);
+
 size_t WriteFunc(
     void * ptr,
     size_t size,
