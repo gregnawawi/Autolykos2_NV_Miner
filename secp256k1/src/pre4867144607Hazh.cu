@@ -149,7 +149,7 @@ int pre4867144607Hazh(
 {
 
 	Initpre4867144607Hazh << <1 + (N_LEN - 1) / BLOCK_DIM, BLOCK_DIM >> > (
-		height, hashes
+		N_LEN,height, hashes
 		);
 	CUDA_CALL(cudaPeekAtLastError());
 
@@ -157,6 +157,7 @@ int pre4867144607Hazh(
 
 }
 __global__ void Initpre4867144607Hazh(
+	const uint32_t n_len,
 	const uint32_t  height,
 	uint32_t * hashes
 )
@@ -166,7 +167,7 @@ __global__ void Initpre4867144607Hazh(
 	tid += blockDim.x * blockIdx.x;
 
 
-	if (tid < N_LEN)
+	if (tid < n_len)
 	{
 
 		uint64_t h[8] = { 0x6A09E667F3BCC908UL, 0xBB67AE8584CAA73BUL, 0x3C6EF372FE94F82BUL, 0xA54FF53A5F1D36F1UL, 0x510E527FADE682D1UL, 0x9B05688C2B3E6C1FUL, 0x1F83D9ABFB41BD6BUL, 0x5BE0CD19137E2179UL };
