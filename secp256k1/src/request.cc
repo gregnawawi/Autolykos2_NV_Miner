@@ -22,6 +22,30 @@
 #include <atomic>
 #include <mutex>
 
+uint32_t calcN(uint32_t Hblock)
+{
+	uint32_t headerHeight;
+	((uint8_t *)&headerHeight)[0] = ((uint8_t *)&Hblock)[3];
+	((uint8_t *)&headerHeight)[1] = ((uint8_t *)&Hblock)[2];
+	((uint8_t *)&headerHeight)[2] = ((uint8_t *)&Hblock)[1];
+	((uint8_t *)&headerHeight)[3] = ((uint8_t *)&Hblock)[0];
+
+	uint32_t newN = INIT_N_LEN;
+	if (headerHeight < IncreaseStart)
+		newN = INIT_N_LEN;
+	else if (headerHeight >= IncreaseEnd)
+		newN = MAX_N_LEN;
+	else
+	{
+		uint32_t itersNumber = (headerHeight - IncreaseStart) / IncreasePeriodForN + 1;
+		for (uint32_t i = 0; i < itersNumber; i++)
+		{
+			newN = newN / 100 * 105;
+		}
+	}
+	return newN;
+}
+
 size_t WriteFunc(
     void * ptr,
     size_t size,
