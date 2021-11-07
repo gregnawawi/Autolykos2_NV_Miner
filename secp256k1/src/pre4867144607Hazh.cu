@@ -143,6 +143,7 @@ __device__ __forceinline__ void BlakeCompress(uint64_t  *h, const uint64_t  *m, 
 }
 
 int pre4867144607Hazh(
+	uint64_t N_LEN ,
 	uint32_t * hashes,
 	uint32_t  height
 )
