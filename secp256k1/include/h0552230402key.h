@@ -14,12 +14,14 @@ void Inith0552230402key(
 	const uint32_t meslen);
 
 __global__ void Blockh0552230402keyStep1(
+	const uint32_t n_len,
 	const uint32_t *data,
 	const uint64_t base,
 	const uint32_t *hashes,
 	uint32_t *BHashes
 );
 __global__ void Blockh0552230402keyStep2(
+	const uint32_t n_mask,
 	const uint32_t *data,
 	const uint64_t base,
 	const uint32_t height,
